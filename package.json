@@ -1,0 +1,11 @@
+{
+  "name": "vue-vuelidate-jsonschema",
+  "version": "0.1.0",
+  "description": "Create validation definitions for vuelidate based on json schema",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Martin Hansen",
+  "license": "ISC"
+}
