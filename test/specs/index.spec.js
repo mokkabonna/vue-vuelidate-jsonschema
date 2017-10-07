@@ -370,7 +370,7 @@ describe('plugin', function() {
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
-          vm.str = 'dfs'
+          vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = 'mustmatch'
           expect(vm.$v.str.$invalid).to.eql(false)
