@@ -10,6 +10,18 @@
   "license": "ISC",
   "devDependencies": {
     "chai": "^4.1.2",
-    "vue": "^2.4.4"
+    "eslint": "^4.8.0",
+    "eslint-config": "^0.3.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.2.0",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "require-uncached": "^1.0.3",
+    "vue": "^2.4.4",
+    "vuelidate": "^0.6.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4"
   }
 }
