@@ -347,6 +347,36 @@ describe('plugin', function() {
         })
       })
 
+      describe('const', function() {
+        it('adds const validator', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'string',
+                  const: 'mustmatch'
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.str.$params.required.type).to.eql('required')
+          expect(vm.$v.str.$params.equal.type).to.eql('equal')
+          vm.str = ''
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = undefined
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = null
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = 'dfs'
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = 'mustmatch'
+          expect(vm.$v.str.$invalid).to.eql(false)
+        })
+      })
+
     })
   })
 })

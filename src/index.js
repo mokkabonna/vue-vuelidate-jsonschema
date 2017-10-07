@@ -2,6 +2,7 @@
 
 var reduce = require('lodash/reduce')
 var set = require('lodash/set')
+var isEqual = require('lodash/isEqual')
 var isString = require('lodash/isString')
 var omit = require('lodash/omit')
 var validators = require('vuelidate/lib/validators')
@@ -40,6 +41,15 @@ function oneOfValidator(choices) {
     choices: choices
   }, function(val) {
     return !validators.required(val) || choices.indexOf(val) !== -1
+  })
+}
+
+function equalValidator(equal) {
+  return vuelidate.withParams({
+    type: 'equal',
+    equal: equal
+  }, function(val) {
+    return !validators.required(val) || isEqual(equal, val)
   })
 }
 
@@ -122,6 +132,11 @@ function getValidationRules(schema) {
     if (propertySchema.hasOwnProperty('enum')) {
       validationObj.required = validators.required
       validationObj.oneOf = oneOfValidator(propertySchema.enum)
+    }
+
+    if (propertySchema.hasOwnProperty('const')) {
+      validationObj.required = validators.required
+      validationObj.equal = equalValidator(propertySchema.const)
     }
 
     all[propKey] = validationObj
