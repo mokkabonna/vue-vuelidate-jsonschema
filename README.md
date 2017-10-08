@@ -79,19 +79,19 @@ export default {
 
 ## Supported json schema validation rules
 
-- type
-- required
-- minLength
-- maxLength
-- minItems
-- maxItems
-- minimum
-- maximum
-- pattern
-- enum
-- const
-- items
-- uniqueItems
+- type => schemaType, if array of types then schemaTypes
+- required => schemaRequired
+- minLength => schemaMinLength
+- maxLength => schemaMaxLength
+- minItems => schemaMinItems
+- maxItems => schemaMaxItems
+- minimum => schemaMinimum
+- maximum => schemaMaximum
+- pattern => schemaPattern
+- enum => schemaOneOf
+- const => schemaEqual
+- items => schemaItems, if items is a schema of type object, the $each property is also used
+- uniqueItems => schemaUnique
 
 The plan is to support all rules. PR's are welcome. When matching validation rules are present in vuelidate, those are used. For other validations this library have quite a few of its own.
 

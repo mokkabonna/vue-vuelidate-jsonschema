@@ -157,7 +157,7 @@ function uniqueValidator(propertySchema) {
   })
 }
 
-function itemsValidator(arraySchema, mustBeItem) {
+function itemsValidator(arraySchema) {
   var normalizedSchemas = Array.isArray(arraySchema.items) ? arraySchema.items : [arraySchema.items]
   return vuelidate.withParams({
     type: 'schemaItems',
@@ -323,7 +323,7 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
 
   if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array' && propertySchema.items.type === 'object') {
     validationObj.$each = getValidationRules(propertySchema.items)
-    validationObj.schemaItems = itemsValidator(propertySchema, true)
+    validationObj.schemaItems = itemsValidator(propertySchema)
   } else if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array') {
     validationObj.schemaItems = itemsValidator(propertySchema)
   }
