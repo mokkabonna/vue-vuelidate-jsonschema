@@ -5,6 +5,7 @@ var set = require('lodash/set')
 var isEqual = require('lodash/isEqual')
 var isString = require('lodash/isString')
 var isPlainObject = require('lodash/isPlainObject')
+var isBoolean = require('lodash/isBoolean')
 var isFinite = require('lodash/isFinite')
 var isNull = require('lodash/isNull')
 var isInteger = require('lodash/isInteger')
@@ -15,6 +16,7 @@ var vuelidate = require('vuelidate')
 var jsonTypes = {
   string: isString,
   object: isPlainObject,
+  boolean: isBoolean,
   array: Array.isArray,
   'null': isNull,
   number: isFinite,
