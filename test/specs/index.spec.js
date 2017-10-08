@@ -4,6 +4,7 @@ var expect = chai.expect
 var plugin = requireUncached('../../src')
 var Vue = requireUncached('vue')
 var Vuelidate = requireUncached('vuelidate')
+var validators = requireUncached('vuelidate/lib/validators')
 
 describe('plugin', function() {
   it('installs ok', function() {
@@ -38,6 +39,9 @@ describe('plugin', function() {
               },
               prop4: {
                 type: 'array'
+              },
+              prop5: {
+                type: 'boolean'
               }
             }
           }
@@ -48,6 +52,7 @@ describe('plugin', function() {
       expect(vm.prop2).to.eql(null)
       expect(vm.prop3).to.eql({})
       expect(vm.prop4).to.eql([])
+      expect(vm.prop5).to.eql(null)
     })
 
     it('supports default value from schema', function() {
@@ -107,7 +112,138 @@ describe('plugin', function() {
       expect(vm.str).to.eql('')
     })
 
+    describe('options merging', function() {
+      it('allows replacing a validation rule', function() {
+        var vm = new Vue({
+          mixins: [Vuelidate.validationMixin],
+          schema: {
+            type: 'object',
+            properties: {
+              str: {
+                type: 'string',
+                minLength: 3
+              }
+            }
+          },
+          validations: {
+            str: {
+              minLength: validators.minLength(5)
+            }
+          }
+        })
+
+        vm.str = 'abc'
+        expect(vm.$v.str.$invalid).to.eql(true)
+        vm.str = 'abcab'
+        expect(vm.$v.str.$invalid).to.eql(false)
+      })
+
+      it('allows adding a validation rule', function() {
+        var vm = new Vue({
+          mixins: [Vuelidate.validationMixin],
+          schema: {
+            type: 'object',
+            properties: {
+              str: {
+                type: 'string',
+                minLength: 20
+              }
+            }
+          },
+          validations: {
+            str: {
+              email: validators.email
+            }
+          }
+        })
+
+        vm.str = 'abc'
+        expect(vm.$v.str.$invalid).to.eql(true)
+        vm.str = 'abc@test.com'
+        expect(vm.$v.str.$invalid).to.eql(true)
+        vm.str = 'abc@testfdsfdsfsadf.com'
+        expect(vm.$v.str.$invalid).to.eql(false)
+      })
+
+      it('allows deleting a validation rule', function() {
+        var vm = new Vue({
+          mixins: [Vuelidate.validationMixin],
+          schema: {
+            type: 'object',
+            properties: {
+              str: {
+                type: 'string',
+                minLength: 20
+              }
+            }
+          },
+          validations: {
+            str: {
+              email: validators.email,
+              minLength: undefined, // deleting
+              required: undefined
+            }
+          }
+        })
+
+        vm.str = 'abc'
+        expect(vm.$v.str.$invalid).to.eql(true)
+        vm.str = 'abc@test.com'
+        expect(vm.$v.str.$invalid).to.eql(false)
+        expect(vm.$v.str).to.contain.keys(['jsonType', 'email'])
+        expect(vm.$v.str).not.to.contain.keys(['minLength', 'required'])
+      })
+    })
+
     describe('validation', function() {
+
+      it('validates type string', function() {
+        var vm = new Vue({
+          mixins: [Vuelidate.validationMixin],
+          schema: {
+            type: 'object',
+            properties: {
+              str: {
+                type: 'string'
+              }
+            }
+          }
+        })
+
+        expect(vm.$v.str.$params.jsonType.type).to.eql('jsonType')
+      })
+
+      it('validates type array', function() {
+        var vm = new Vue({
+          mixins: [Vuelidate.validationMixin],
+          schema: {
+            type: 'object',
+            properties: {
+              str: {
+                type: ['string', 'null', 'integer']
+              }
+            }
+          }
+        })
+
+        expect(vm.$v.str.$params.or.type).to.eql('or')
+
+        vm.str = ''
+        expect(vm.$v.str.$invalid).to.eql(false)
+        vm.str = null
+        expect(vm.$v.str.$invalid).to.eql(false)
+        vm.str = 1
+        expect(vm.$v.str.$invalid).to.eql(false)
+        vm.str = {}
+        expect(vm.$v.str.$invalid).to.eql(true)
+        vm.str = []
+        expect(vm.$v.str.$invalid).to.eql(true)
+        vm.str = 1.1
+        expect(vm.$v.str.$invalid).to.eql(true)
+        vm.str = true
+        expect(vm.$v.str.$invalid).to.eql(true)
+      })
+
       describe('required', function() {
         // required should not be added based on json schema required, it has not the same meaning
         it('adds required validator to model, not allowing undefined', function() {
@@ -125,6 +261,7 @@ describe('plugin', function() {
           })
 
           expect(vm.$v.str.$params.required.type).to.eql('requiredIf')
+          vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = undefined
           expect(vm.$v.str.$invalid).to.eql(true)
@@ -182,7 +319,7 @@ describe('plugin', function() {
           vm.str = undefined
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = null
-          expect(vm.$v.str.$invalid).to.eql(false)
+          expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = '123'
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = '1234'
@@ -190,30 +327,34 @@ describe('plugin', function() {
         })
       })
 
-      describe('maxLength', function() {
-        it('adds maxLength validator', function() {
+      describe('minimum and maximum', function() {
+        it('adds between validator', function() {
           var vm = new Vue({
             mixins: [Vuelidate.validationMixin],
             schema: {
               type: 'object',
               properties: {
                 str: {
-                  type: 'number',
-                  maxLength: 3
+                  type: 'integer',
+                  minimum: 5,
+                  maximum: 10
                 }
               }
             }
           })
 
-          expect(vm.$v.str.$params.maxLength.type).to.eql('maxLength')
-          expect(vm.$v.str.$invalid).to.eql(false)
+          expect(vm.$v.str.$params.between.type).to.eql('between')
+          vm.str = null
+          expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
           expect(vm.$v.str.$invalid).to.eql(false)
-          vm.str = null
+          vm.str = 4
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = 5
           expect(vm.$v.str.$invalid).to.eql(false)
-          vm.str = '123'
+          vm.str = 10
           expect(vm.$v.str.$invalid).to.eql(false)
-          vm.str = '1234'
+          vm.str = 11
           expect(vm.$v.str.$invalid).to.eql(true)
         })
       })
@@ -269,10 +410,9 @@ describe('plugin', function() {
           })
 
           expect(vm.$v.str.$params.maximum.type).to.eql('maximum')
-          expect(vm.$v.str.$invalid).to.eql(false)
-          vm.str = undefined
-          expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = null
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = undefined
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = 0
           expect(vm.$v.str.$invalid).to.eql(false)

@@ -1,12 +1,34 @@
 'use strict'
-
+var mergeStrategy = require('./merge-validation-options')
 var reduce = require('lodash/reduce')
 var set = require('lodash/set')
 var isEqual = require('lodash/isEqual')
 var isString = require('lodash/isString')
+var isPlainObject = require('lodash/isPlainObject')
+var isFinite = require('lodash/isFinite')
+var isNull = require('lodash/isNull')
+var isInteger = require('lodash/isInteger')
 var omit = require('lodash/omit')
 var validators = require('vuelidate/lib/validators')
 var vuelidate = require('vuelidate')
+
+var jsonTypes = {
+  string: isString,
+  object: isPlainObject,
+  array: Array.isArray,
+  'null': isNull,
+  number: isFinite,
+  integer: isInteger
+}
+
+function typeValidator(type) {
+  return vuelidate.withParams({
+    type: 'jsonType',
+    jsonType: type
+  }, function(val) {
+    return val === undefined || jsonTypes[type](val)
+  })
+}
 
 function minValidator(min) {
   return vuelidate.withParams({
@@ -79,9 +101,7 @@ function setProperties(base, schema) {
 
 function createDataProperties(schemas) {
   return reduce(schemas, function(all, schema, mountPoint) {
-
     setProperties(all, schema)
-
     return all
   }, {})
 }
@@ -101,6 +121,14 @@ function getValidationRules(schema) {
 
     var validationObj = {}
 
+    if (Array.isArray(propertySchema.type)) {
+      validationObj.or = validators.or.apply(validators, propertySchema.type.map(function(type) {
+        return typeValidator(type)
+      }))
+    } else {
+      validationObj.jsonType = typeValidator(propertySchema.type)
+    }
+
     if (schema.required && schema.required.indexOf(propKey) !== -1) {
       validationObj.required = validators.requiredIf(function(val) {
         return this[propKey] === undefined
@@ -116,12 +144,12 @@ function getValidationRules(schema) {
       validationObj.maxLength = validators.maxLength(propertySchema.maxLength)
     }
 
-    if (propertySchema.hasOwnProperty('minimum')) {
-      validationObj.required = validators.required
+    if (propertySchema.hasOwnProperty('minimum') && propertySchema.hasOwnProperty('maximum')) {
+      validationObj.between = validators.between(propertySchema.minimum, propertySchema.maximum)
+    } else if (propertySchema.hasOwnProperty('minimum')) {
+      validationObj.required = validators.required //TODO is this correct?
       validationObj.minimum = minValidator(propertySchema.minimum)
-    }
-
-    if (propertySchema.hasOwnProperty('maximum')) {
+    } else if (propertySchema.hasOwnProperty('maximum')) {
       validationObj.maximum = maxValidator(propertySchema.maximum)
     }
 
@@ -157,6 +185,8 @@ function generateValidationSchema(schemas) {
 module.exports = {
   install: function(Vue, options) {
     options = options || {}
+
+    Vue.config.optionMergeStrategies.validations = mergeStrategy
 
     Vue.mixin({
       validations() {

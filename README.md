@@ -54,7 +54,7 @@ export default {
     },
     age: {
       minimum: minimum(18),
-      maximum: maximum(30),
+      maximum: maximum(30)
     }
   }
 }
@@ -62,6 +62,7 @@ export default {
 
 ## Supported json schema validation rules
 
+- type
 - required
 - minLength
 - maxLength
@@ -72,3 +73,41 @@ export default {
 - const
 
 The plan is to support all rules. PR's are welcome.
+
+### Required property in json schema context
+
+The required property on in json schema only means that the property should be present. Meaning any value but undefined. So adding the property to the required array does not apply the required validator in vuelidate. It only adds a requiredIf that is checks that the value is not undefined.
+
+However when using various other validators the required validator is added. Like for instance with the minLength validator. Adding minLength(1) does not actually validate empty strings as falsy, this is because that would overlap with the required validator. So we add them both.
+
+## Between validator
+
+If both the minimum and maximum properties are present the between validator in vuelidate is used.
+
+## Override or extend validation
+
+You can override or extend the validation rules on your vue vm like this:
+
+```js
+export default {
+  schema: {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 5,
+        maxLength: 30
+      }
+    }
+  },
+  validations: {
+    name: {
+      minLength: minLength(2), //overrides minLength 5
+      email, // adds email validator
+      maxLength: undefined // removes maxlength validator
+    }
+  }
+}
+```
+
+Keep in mind that for instance json schema minLength validator adds both minLength and required validator. So you need to remove both if that is what you want.
