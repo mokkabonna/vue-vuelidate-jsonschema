@@ -289,6 +289,7 @@ I recommend to use [vuelidate-error-extractor](https://github.com/dobromir-hrist
 - [x] document and test mounting procedure (multiple schemas in one vm)
 - [ ] better validation params for array items validation (when not object)
 - [ ] document exactly what validators are used for any json schema validation property
+- [ ] pass title, description etc to the validator as params (possibly whole property schema)
 
 
 PRs are welcome.
