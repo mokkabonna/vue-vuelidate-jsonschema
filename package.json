@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha test/specs",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "coverage": "nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls"
   },
   "author": "Martin Hansen",
   "license": "ISC",
