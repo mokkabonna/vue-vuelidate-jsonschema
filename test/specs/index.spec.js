@@ -25,24 +25,22 @@ describe('plugin', function() {
           }
         },
         schema: {
-          '.': {
-            type: 'object',
-            properties: {
-              prop1: {
-                type: 'string'
-              },
-              prop2: {
-                type: 'number'
-              },
-              prop3: {
-                type: 'object'
-              },
-              prop4: {
-                type: 'array'
-              },
-              prop5: {
-                type: 'boolean'
-              }
+          type: 'object',
+          properties: {
+            prop1: {
+              type: 'string'
+            },
+            prop2: {
+              type: 'number'
+            },
+            prop3: {
+              type: 'object'
+            },
+            prop4: {
+              type: 'array'
+            },
+            prop5: {
+              type: 'boolean'
             }
           }
         }
@@ -58,13 +56,11 @@ describe('plugin', function() {
     it('supports default value from schema', function() {
       var vm = new Vue({
         schema: {
-          '.': {
-            type: 'object',
-            properties: {
-              prop1: {
-                type: 'string',
-                default: '123'
-              }
+          type: 'object',
+          properties: {
+            prop1: {
+              type: 'string',
+              default: '123'
             }
           }
         }
@@ -76,15 +72,14 @@ describe('plugin', function() {
     it('supports nesting', function() {
       var vm = new Vue({
         schema: {
-          '.': {
-            type: 'object',
-            properties: {
-              obj1: {
-                type: 'object',
-                properties: {
-                  prop1: {
-                    type: 'string'
-                  }
+
+          type: 'object',
+          properties: {
+            obj1: {
+              type: 'object',
+              properties: {
+                prop1: {
+                  type: 'string'
                 }
               }
             }
@@ -112,11 +107,52 @@ describe('plugin', function() {
       expect(vm.str).to.eql('')
     })
 
+    it('supports multiple schemas on root without defining mountPoint', function() {
+      var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
+        schema: [{
+          type: 'object',
+          properties: {
+            str: {
+              type: 'string'
+            },
+            conflict: {
+              type: 'string',
+              minLength: 3,
+              maxLength: 5
+            }
+          }
+        }, {
+          type: 'object',
+          properties: {
+            str2: {
+              type: 'string'
+            },
+            conflict: {
+              type: 'string',
+              maxLength: 10
+            }
+          }
+        }]
+      })
+
+      expect(vm.str).to.eql('')
+      expect(vm.str2).to.eql('')
+      expect(vm.conflict).to.eql('')
+      expect(vm.$v.str.$params.jsonType.type).to.eql('jsonType')
+      expect(vm.$v.str2.$params.jsonType.type).to.eql('jsonType')
+      // should merge the rules
+      expect(vm.$v.conflict.$params.jsonType.jsonType).to.eql('string')
+      expect(vm.$v.conflict.$params.minLength.min).to.eql(3)
+      expect(vm.$v.conflict.$params.maxLength.max).to.eql(10)
+    })
+
     it('supports deep mounted schema', function() {
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
-        schema: {
-          'foo.bar.baz': {
+        schema: [{
+          mountPoint: 'foo.bar.baz',
+          schema: {
             type: 'object',
             properties: {
               str: {
@@ -125,7 +161,7 @@ describe('plugin', function() {
               }
             }
           }
-        }
+        }]
       })
 
       expect(vm.foo.bar.baz.str).to.eql('abc')
@@ -135,17 +171,9 @@ describe('plugin', function() {
     it('supports multiple schemas', function() {
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
-        schema: {
-          'foo.bar.baz': {
-            type: 'object',
-            properties: {
-              str: {
-                type: 'string',
-                default: 'abc'
-              }
-            }
-          },
-          'a.b.c': {
+        schema: [{
+          mountPoint: 'foo.bar.baz',
+          schema: {
             type: 'object',
             properties: {
               str: {
@@ -154,7 +182,18 @@ describe('plugin', function() {
               }
             }
           }
-        }
+        }, {
+          mountPoint: 'a.b.c',
+          schema: {
+            type: 'object',
+            properties: {
+              str: {
+                type: 'string',
+                default: 'abc'
+              }
+            }
+          }
+        }]
       })
 
       expect(vm.foo.bar.baz.str).to.eql('abc')

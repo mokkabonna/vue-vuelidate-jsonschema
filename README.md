@@ -204,6 +204,74 @@ This merging of validation options works by adding a custom merge strategy for v
 
 This works also if your validations property is a function.
 
+## Multiple schemas
+
+You can define multiple schemas that all adds their validation rules. Simply define **schema** as an array.
+
+```js
+export default {
+  schema: [{
+    type: 'object',
+    properties: {
+      prop1: {
+        type: 'string'
+      },
+      conflict: {
+        type: 'string',
+        minLength: 3,
+        maxLength: 5
+      }
+    }
+  }, {
+    type: 'object',
+    properties: {
+      prop2: {
+        type: 'string'
+      },
+      conflict: {
+        type: 'string',
+        maxLength: 10
+      }
+    }
+  }]
+}
+```
+
+This will add data/validation for prop1, prop2 and conflict. The later definition of **conflict** will be merged into the other definition.
+
+In the above example, the conflict property will still have the minLength validator. But also a maxLength validator of 10.
+
+
+## Custom mount point
+
+By default the schemas are added to the root data/validation structure. To attach them deeper down in the structure you can define a mount point:
+
+```js
+export default {
+  schema: [{
+    mountPoint: 'deep.nested.structure',
+    schema: {
+      type: 'object',
+      properties: {
+        prop1: {
+          type: 'string'
+        }
+      }
+    }
+  }, {
+    mountPoint: 'other.deep.stucture',
+    schema: {
+      type: 'object',
+      properties: {
+        prop2: {
+          type: 'string'
+        }
+      }
+    }
+  }]
+}
+```
+
 
 ## vuelidate error extractor
 

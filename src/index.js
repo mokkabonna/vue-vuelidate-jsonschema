@@ -2,6 +2,7 @@
 var mergeStrategy = require('./merge-validation-options')
 var reduce = require('lodash/reduce')
 var every = require('lodash/every')
+var merge = require('lodash/merge')
 var set = require('lodash/set')
 var get = require('lodash/get')
 var isEqual = require('lodash/isEqual')
@@ -156,24 +157,35 @@ function setProperties(base, schema) {
 }
 
 function createDataProperties(schemas) {
-  return reduce(schemas, function(all, schema, mountPoint) {
-    if (mountPoint !== '.') {
-      set(all, mountPoint, {}) // TODO support non object schemas
-      setProperties(get(all, mountPoint), schema)
+  return reduce(schemas, function(all, schemaConfig) {
+    if (schemaConfig.mountPoint !== '.') {
+      // scaffold structure
+      set(all, schemaConfig.mountPoint, {}) // TODO support non object schemas
+      setProperties(get(all, schemaConfig.mountPoint), schemaConfig.schema)
     } else {
-      setProperties(all, schema)
+      setProperties(all, schemaConfig.schema)
     }
     return all
   }, {})
 }
 
-function isRootSchema(schema) {
-  return schema.hasOwnProperty('type') && schema.type === 'object'
-}
-
-function normalizeDirectSchema(schema) {
-  return {
-    '.': schema
+function normalizeSchemas(schemaConfig) {
+  if (Array.isArray(schemaConfig)) {
+    return schemaConfig.map(function(config) {
+      if (config.mountPoint) {
+        return config
+      } else {
+        return {
+          mountPoint: '.',
+          schema: config
+        }
+      }
+    })
+  } else {
+    return [{
+      mountPoint: '.',
+      schema: schemaConfig
+    }]
   }
 }
 
@@ -265,12 +277,19 @@ function getValidationRules(schema) {
 function generateValidationSchema(schemas) {
   var root = {}
 
-  if (schemas['.']) {
-    root = getValidationRules(schemas['.'])
+  var roots = schemas.filter(function(schemaConfig) {
+    return schemaConfig.mountPoint === '.'
+  })
+
+  if (roots.length) {
+    root = roots.reduce(function(all, schemaConfig) {
+      merge(all, getValidationRules(schemaConfig.schema))
+      return all
+    }, root)
   }
 
-  return reduce(omit(schemas, '.'), function(all, schema, mountPoint) {
-    set(all, mountPoint, getValidationRules(schema))
+  return reduce(schemas, function(all, schemaConfig) {
+    set(all, schemaConfig.mountPoint, getValidationRules(schemaConfig.schema))
     return all
   }, root)
 }
@@ -294,19 +313,19 @@ module.exports = {
 
     Vue.mixin({
       validations() {
-        if (this.schemas) {
-          return generateValidationSchema(this.schemas)
+        if (this.schema) {
+          return generateValidationSchema(this.schema)
         } else {
           return {}
         }
       },
       beforeCreate() {
         if (!this.$options.schema) return
-        var normalized = isRootSchema(this.$options.schema) ? normalizeDirectSchema(this.$options.schema) : this.$options.schema
+        var normalized = normalizeSchemas(this.$options.schema)
         var dataStructure = createDataProperties(normalized)
 
-        // expose schemas normalized
-        Vue.util.defineReactive(this, 'schemas', normalized)
+        // rewrite schemas normalized
+        this.schema = normalized
         defineReactives(this, dataStructure)
       }
     })
