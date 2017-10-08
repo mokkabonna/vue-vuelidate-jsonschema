@@ -53,8 +53,7 @@ export default {
       minLength: minLength(5)
     },
     age: {
-      minimum: minimum(18),
-      maximum: maximum(30)
+      between: between(18, 30)
     }
   }
 }
