@@ -65,6 +65,8 @@ export default {
 - required
 - minLength
 - maxLength
+- minItems
+- maxItems
 - minimum
 - maximum
 - pattern

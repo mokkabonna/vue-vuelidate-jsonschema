@@ -426,6 +426,65 @@ describe('plugin', function() {
         it('should be tested')
       })
 
+      describe('minItems', function() {
+        it('adds the minLength validator', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'array',
+                  minItems: 2
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.str.$params.required.type).to.eql('required')
+          expect(vm.$v.str.$params.minItems.type).to.eql('minLength')
+
+          vm.str = null
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = undefined
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = []
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [1]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [1, 2]
+          expect(vm.$v.str.$invalid).to.eql(false)
+        })
+      })
+
+      describe('maxItems', function() {
+        it('adds the maxLength validator', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'array',
+                  maxItems: 3
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.str.$params.maxItems.type).to.eql('maxLength')
+
+          vm.str = null
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = undefined
+          expect(vm.$v.str.$invalid).to.eql(false)
+          vm.str = [1, 2, 3]
+          expect(vm.$v.str.$invalid).to.eql(false)
+          vm.str = [1, 2, 3, 4]
+          expect(vm.$v.str.$invalid).to.eql(true)
+        })
+      })
+
       describe('pattern', function() {
         it('adds pattern validator', function() {
           var vm = new Vue({

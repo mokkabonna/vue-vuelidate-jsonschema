@@ -145,6 +145,15 @@ function getValidationRules(schema) {
       validationObj.maxLength = validators.maxLength(propertySchema.maxLength)
     }
 
+    if (propertySchema.hasOwnProperty('minItems')) {
+      validationObj.required = validators.required
+      validationObj.minItems = validators.minLength(propertySchema.minItems)
+    }
+
+    if (propertySchema.hasOwnProperty('maxItems')) {
+      validationObj.maxItems = validators.maxLength(propertySchema.maxItems)
+    }
+
     if (propertySchema.hasOwnProperty('minimum') && propertySchema.hasOwnProperty('maximum')) {
       validationObj.between = validators.between(propertySchema.minimum, propertySchema.maximum)
     } else if (propertySchema.hasOwnProperty('minimum')) {
