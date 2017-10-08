@@ -12,8 +12,9 @@ var uniqBy = require('lodash/uniqBy')
 var isBoolean = require('lodash/isBoolean')
 var isFinite = require('lodash/isFinite')
 var isNull = require('lodash/isNull')
-var isInteger = require('lodash/isInteger')
 var omit = require('lodash/omit')
+var isInteger = require('lodash/isInteger')
+var values = require('lodash/values')
 var validators = require('vuelidate/lib/validators')
 var vuelidate = require('vuelidate')
 
@@ -27,6 +28,22 @@ var jsonTypes = {
   integer: isInteger
 }
 
+var validatorMapping = {
+  minimum: minValidator,
+  maximum: maxValidator,
+  required: validators.required,
+  requiredIf: validators.requiredIf,
+  requiredUnless: validators.requiredUnless,
+  minLength: validators.minLength,
+  maxLength: validators.maxLength,
+  jsonType: typeValidator,
+  pattern: patternValidator,
+  oneOf: oneOfValidator,
+  equal: equalValidator,
+  unique: uniqueValidator,
+  items: itemsValidator
+}
+
 function typeValidator(type) {
   return vuelidate.withParams({
     type: 'jsonType',
@@ -34,6 +51,20 @@ function typeValidator(type) {
   }, function(val) {
     return val === undefined || jsonTypes[type](val)
   })
+}
+
+/**
+ * Wraps existing validators so that we can expose the json schema as a param
+ */
+function jsonSchemaValidator(propertySchema, params) {
+  var validator = validatorMapping[params.type]
+  // TODO are order always guaranteed here??
+  var subParams = values(omit(params, 'type'))
+
+  return vuelidate.withParams(Object.assign({
+    metaType: 'jsonSchemaValidator',
+    schema: propertySchema
+  }, params), validator.apply(null, subParams))
 }
 
 function minValidator(min) {
@@ -201,12 +232,18 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
       return typeValidator(type)
     }))
   } else {
-    validationObj.jsonType = typeValidator(propertySchema.type)
+    validationObj.jsonType = jsonSchemaValidator(propertySchema, {
+      type: 'jsonType',
+      jsonType: propertySchema.type
+    })
   }
 
   if (schema.required && schema.required.indexOf(propKey) !== -1) {
-    validationObj.required = validators.requiredIf(function(val) {
-      return this[propKey] === undefined
+    validationObj.required = jsonSchemaValidator(propertySchema, {
+      type: 'requiredIf',
+      prop: function() {
+        return this[propKey] === undefined
+      }
     })
   }
 
@@ -232,7 +269,10 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
     validationObj.between = validators.between(propertySchema.minimum, propertySchema.maximum)
   } else if (propertySchema.hasOwnProperty('minimum')) {
     validationObj.required = validators.required // TODO is this correct?
-    validationObj.minimum = minValidator(propertySchema.minimum)
+    validationObj.minimum = jsonSchemaValidator(propertySchema, {
+      type: 'minimum',
+      min: propertySchema.minimum
+    })
   } else if (propertySchema.hasOwnProperty('maximum')) {
     validationObj.maximum = maxValidator(propertySchema.maximum)
   }

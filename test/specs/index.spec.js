@@ -14,7 +14,27 @@ describe('plugin', function() {
   describe('when installed', function() {
     beforeEach(function() {
       Vue.use(plugin)
-      Vue.use(Vuelidate)
+      Vue.use(Vuelidate) // TODO seemingly does nothing is testing context, using mixin instead
+    })
+
+    it('exposes json property schema as params', function() {
+      var propSchema = {
+        type: 'integer',
+        title: 'Age',
+        description: 'The age of the student',
+        minimum: 3
+      }
+      var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
+        schema: {
+          type: 'object',
+          properties: {
+            age: propSchema
+          }
+        }
+      })
+
+      expect(vm.$v.age.$params.minimum.schema).to.eql(propSchema)
     })
 
     it('adds properties to data object', function() {
