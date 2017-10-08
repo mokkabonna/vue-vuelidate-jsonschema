@@ -67,6 +67,15 @@ function typeValidator(propertySchema, type) {
   })
 }
 
+function typeArrayValidator(propertySchema, validationCollection) {
+  return vuelidate.withParams({
+    type: 'schemaTypes',
+    schema: propertySchema
+  }, function(val) {
+    return validators.or.apply(validators, validationCollection)(val)
+  })
+}
+
 function minValidator(propertySchema, min) {
   return vuelidate.withParams({
     type: 'schemaMinimum',
@@ -246,7 +255,7 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
   }
 
   if (Array.isArray(propertySchema.type)) {
-    validationObj.or = validators.or.apply(validators, propertySchema.type.map(function(type) {
+    validationObj.schemaTypes = typeArrayValidator(propertySchema, propertySchema.type.map(function(type) {
       return typeValidator(propertySchema, type)
     }))
   } else {
@@ -254,58 +263,58 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
   }
 
   if (schema.required && schema.required.indexOf(propKey) !== -1) {
-    validationObj.required = requiredValidator(propertySchema)
+    validationObj.schemaRequired = requiredValidator(propertySchema)
   }
 
   if (propertySchema.hasOwnProperty('minLength')) {
-    validationObj.required = requiredValidator(propertySchema)
-    validationObj.minLength = minLengthValidator(propertySchema, propertySchema.minLength)
+    validationObj.schemaRequired = requiredValidator(propertySchema)
+    validationObj.schemaMinLength = minLengthValidator(propertySchema, propertySchema.minLength)
   }
 
   if (propertySchema.hasOwnProperty('maxLength')) {
-    validationObj.maxLength = maxLengthValidator(propertySchema, propertySchema.maxLength)
+    validationObj.schemaMaxLength = maxLengthValidator(propertySchema, propertySchema.maxLength)
   }
 
   if (propertySchema.hasOwnProperty('minItems')) {
-    validationObj.required = requiredValidator(propertySchema)
-    validationObj.minItems = minLengthValidator(propertySchema, propertySchema.minItems)
+    validationObj.schemaRequired = requiredValidator(propertySchema)
+    validationObj.schemaMinItems = minLengthValidator(propertySchema, propertySchema.minItems)
   }
 
   if (propertySchema.hasOwnProperty('maxItems')) {
-    validationObj.maxItems = maxLengthValidator(propertySchema, propertySchema.maxItems)
+    validationObj.schemaMaxItems = maxLengthValidator(propertySchema, propertySchema.maxItems)
   }
 
   if (propertySchema.hasOwnProperty('minimum') && propertySchema.hasOwnProperty('maximum')) {
-    validationObj.between = betweenValidator(propertySchema, propertySchema.minimum, propertySchema.maximum)
+    validationObj.schemaBetween = betweenValidator(propertySchema, propertySchema.minimum, propertySchema.maximum)
   } else if (propertySchema.hasOwnProperty('minimum')) {
-    validationObj.required = requiredValidator(propertySchema) // TODO is this correct?
-    validationObj.minimum = minValidator(propertySchema, propertySchema.minimum)
+    validationObj.schemaRequired = requiredValidator(propertySchema) // TODO is this correct?
+    validationObj.schemaMinimum = minValidator(propertySchema, propertySchema.minimum)
   } else if (propertySchema.hasOwnProperty('maximum')) {
-    validationObj.maximum = maxValidator(propertySchema, propertySchema.maximum)
+    validationObj.schemaMaximum = maxValidator(propertySchema, propertySchema.maximum)
   }
 
   if (propertySchema.hasOwnProperty('pattern')) {
-    validationObj.pattern = patternValidator(propertySchema, new RegExp(propertySchema.pattern))
+    validationObj.schemaPattern = patternValidator(propertySchema, new RegExp(propertySchema.pattern))
   }
 
   if (propertySchema.hasOwnProperty('enum')) {
-    validationObj.required = requiredValidator(propertySchema)
-    validationObj.oneOf = oneOfValidator(propertySchema, propertySchema.enum)
+    validationObj.schemaRequired = requiredValidator(propertySchema)
+    validationObj.schemaOneOf = oneOfValidator(propertySchema, propertySchema.enum)
   }
 
   if (propertySchema.hasOwnProperty('const')) {
-    validationObj.required = requiredValidator(propertySchema)
-    validationObj.equal = equalValidator(propertySchema, propertySchema.const)
+    validationObj.schemaRequired = requiredValidator(propertySchema)
+    validationObj.schemaEqual = equalValidator(propertySchema, propertySchema.const)
   }
 
   if (propertySchema.hasOwnProperty('uniqueItems')) {
-    validationObj.unique = uniqueValidator(propertySchema)
+    validationObj.schemaUnique = uniqueValidator(propertySchema)
   }
 
   if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array' && propertySchema.items.type === 'object') {
     validationObj.$each = getValidationRules(propertySchema.items)
   } else if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array') {
-    validationObj.items = itemsValidator(propertySchema)
+    validationObj.schemaItems = itemsValidator(propertySchema)
   }
 
   return validationObj

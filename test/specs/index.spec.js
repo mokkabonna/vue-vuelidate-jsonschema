@@ -34,7 +34,7 @@ describe('plugin', function() {
         }
       })
 
-      expect(vm.$v.age.$params.minimum.schema).to.eql(propSchema)
+      expect(vm.$v.age.$params.schemaMinimum.schema).to.eql(propSchema)
     })
 
     it('adds properties to data object', function() {
@@ -163,8 +163,8 @@ describe('plugin', function() {
       expect(vm.$v.str2.$params.schemaType.type).to.eql('schemaType')
       // should merge the rules
       expect(vm.$v.conflict.$params.schemaType.jsonType).to.eql('string')
-      expect(vm.$v.conflict.$params.minLength.min).to.eql(3)
-      expect(vm.$v.conflict.$params.maxLength.max).to.eql(10)
+      expect(vm.$v.conflict.$params.schemaMinLength.min).to.eql(3)
+      expect(vm.$v.conflict.$params.schemaMaxLength.max).to.eql(10)
     })
 
     it('supports deep mounted schema', function() {
@@ -290,8 +290,8 @@ describe('plugin', function() {
           validations: {
             str: {
               email: validators.email,
-              minLength: undefined, // deleting
-              required: undefined
+              schemaMinLength: undefined, // deleting
+              schemaRequired: undefined
             }
           }
         })
@@ -301,7 +301,7 @@ describe('plugin', function() {
         vm.str = 'abc@test.com'
         expect(vm.$v.str.$invalid).to.eql(false)
         expect(vm.$v.str).to.contain.keys(['schemaType', 'email'])
-        expect(vm.$v.str).not.to.contain.keys(['minLength', 'schemaRequired'])
+        expect(vm.$v.str).not.to.contain.keys(['schemaMinLength', 'schemaRequired'])
       })
     })
 
@@ -318,7 +318,7 @@ describe('plugin', function() {
             }
           }
         })
-        console.log(vm.$v.str.$params)
+
         expect(vm.$v.str.$params.schemaType.type).to.eql('schemaType')
       })
 
@@ -335,7 +335,7 @@ describe('plugin', function() {
           }
         })
 
-        expect(vm.$v.str.$params.or.type).to.eql('or')
+        expect(vm.$v.str.$params.schemaTypes.type).to.eql('schemaTypes')
 
         vm.str = ''
         expect(vm.$v.str.$invalid).to.eql(false)
@@ -369,7 +369,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.required.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
           vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = undefined
@@ -392,8 +392,8 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.required.type).to.eql('schemaRequired')
-          expect(vm.$v.str.$params.minLength.type).to.eql('schemaMinLength')
+          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$params.schemaMinLength.type).to.eql('schemaMinLength')
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
           expect(vm.$v.str.$invalid).to.eql(true)
@@ -423,7 +423,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.maxLength.type).to.eql('schemaMaxLength')
+          expect(vm.$v.str.$params.schemaMaxLength.type).to.eql('schemaMaxLength')
           vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
@@ -453,7 +453,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.between.type).to.eql('schemaBetween')
+          expect(vm.$v.str.$params.schemaBetween.type).to.eql('schemaBetween')
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
@@ -484,8 +484,8 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.required.type).to.eql('schemaRequired')
-          expect(vm.$v.str.$params.minimum.type).to.eql('schemaMinimum')
+          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$params.schemaMinimum.type).to.eql('schemaMinimum')
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
           expect(vm.$v.str.$invalid).to.eql(true)
@@ -519,7 +519,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.maximum.type).to.eql('schemaMaximum')
+          expect(vm.$v.str.$params.schemaMaximum.type).to.eql('schemaMaximum')
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
@@ -552,8 +552,8 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.required.type).to.eql('schemaRequired')
-          expect(vm.$v.str.$params.minItems.type).to.eql('schemaMinLength')
+          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$params.schemaMinItems.type).to.eql('schemaMinLength')
 
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
@@ -583,7 +583,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.maxItems.type).to.eql('schemaMaxLength')
+          expect(vm.$v.str.$params.schemaMaxItems.type).to.eql('schemaMaxLength')
 
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
@@ -611,7 +611,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.pattern.type).to.eql('schemaPattern')
+          expect(vm.$v.str.$params.schemaPattern.type).to.eql('schemaPattern')
           vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
@@ -638,8 +638,8 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.required.type).to.eql('schemaRequired')
-          expect(vm.$v.str.$params.oneOf.type).to.eql('schemaOneOf')
+          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$params.schemaOneOf.type).to.eql('schemaOneOf')
           vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
@@ -670,8 +670,8 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.required.type).to.eql('schemaRequired')
-          expect(vm.$v.str.$params.equal.type).to.eql('schemaEqual')
+          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$params.schemaEqual.type).to.eql('schemaEqual')
           vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
@@ -700,7 +700,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.unique.type).to.eql('schemaUnique')
+          expect(vm.$v.str.$params.schemaUnique.type).to.eql('schemaUnique')
           vm.str = []
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = undefined
@@ -751,7 +751,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.required.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
 
           vm.str = ['string', 1]
           expect(vm.$v.str.$invalid).to.eql(true)
@@ -794,7 +794,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.required.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
 
           vm.str = ['string', 1]
           expect(vm.$v.str.$invalid).to.eql(true)
@@ -841,14 +841,14 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.required.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
 
           vm.str = ['string', 1]
           // adds $each special rule
-          expect(vm.$v.str.$each[0].name.$params.required.type).to.eql('schemaRequired')
-          expect(vm.$v.str.$each[0].name.$params.minLength.type).to.eql('schemaMinLength')
-          expect(vm.$v.str.$each[1].name.$params.required.type).to.eql('schemaRequired')
-          expect(vm.$v.str.$each[1].name.$params.minLength.type).to.eql('schemaMinLength')
+          expect(vm.$v.str.$each[0].name.$params.schemaRequired.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$each[0].name.$params.schemaMinLength.type).to.eql('schemaMinLength')
+          expect(vm.$v.str.$each[1].name.$params.schemaRequired.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$each[1].name.$params.schemaMinLength.type).to.eql('schemaMinLength')
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [{
             name: 'fo'
