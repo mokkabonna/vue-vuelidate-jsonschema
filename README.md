@@ -72,6 +72,7 @@ export default {
 - pattern
 - enum
 - const
+- items (when a single schema)
 
 The plan is to support all rules. PR's are welcome.
 
