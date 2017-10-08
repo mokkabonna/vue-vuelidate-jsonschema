@@ -392,11 +392,10 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
           expect(vm.$v.str.$params.schemaMinLength.type).to.eql('schemaMinLength')
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
-          expect(vm.$v.str.$invalid).to.eql(true)
+          expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = ''
@@ -484,11 +483,10 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
           expect(vm.$v.str.$params.schemaMinimum.type).to.eql('schemaMinimum')
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
-          expect(vm.$v.str.$invalid).to.eql(true)
+          expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = 0
@@ -552,13 +550,12 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
           expect(vm.$v.str.$params.schemaMinItems.type).to.eql('schemaMinLength')
 
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
-          expect(vm.$v.str.$invalid).to.eql(true)
+          expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = []
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [1]
@@ -638,12 +635,11 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
           expect(vm.$v.str.$params.schemaOneOf.type).to.eql('schemaOneOf')
           vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
-          expect(vm.$v.str.$invalid).to.eql(true)
+          expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = 'dfs'
@@ -670,12 +666,11 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
           expect(vm.$v.str.$params.schemaEqual.type).to.eql('schemaEqual')
           vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
-          expect(vm.$v.str.$invalid).to.eql(true)
+          expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = ''
@@ -751,8 +746,9 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
-
+          expect(vm.$v.str.$params.schemaItems.type).to.eql('schemaItems')
+          vm.str = undefined
+          expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = ['string', 1]
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = []
@@ -785,7 +781,7 @@ describe('plugin', function() {
                     properties: {
                       name: {
                         type: 'string',
-                        minLength: '3'
+                        minLength: 3
                       }
                     }
                   }]
@@ -794,8 +790,9 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
-
+          expect(vm.$v.str.$params.schemaItems.type).to.eql('schemaItems')
+          vm.str = undefined
+          expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = ['string', 1]
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = []
@@ -814,6 +811,78 @@ describe('plugin', function() {
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [3, {
             name: 'foo'
+          }]
+          expect(vm.$v.str.$invalid).to.eql(false)
+        })
+
+        it('validates items correctly when array of schemas', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'array',
+                  minItems: 1,
+                  items: [{
+                    type: 'object',
+                    properties: {
+                      name: {
+                        type: 'string',
+                        minLength: 3
+                      },
+                      deep: {
+                        type: 'object',
+                        properties: {
+                          deepName: {
+                            type: 'string',
+                            maxLength: 10
+                          }
+                        }
+                      }
+                    }
+                  }]
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.str.$params.schemaItems.type).to.eql('schemaItems')
+          vm.str = undefined
+          expect(vm.$v.str.$invalid).to.eql(false)
+          vm.str = [{
+            name: 'foo'
+            // deep is not required
+          }]
+          expect(vm.$v.str.$invalid).to.eql(false)
+
+          vm.str = [{
+            name: 'foo',
+            deep: [] // deep must be object
+          }]
+          expect(vm.$v.str.$invalid).to.eql(true)
+
+          vm.str = [{
+            name: 'foo',
+            deep: {
+              // deepName is not required
+            }
+          }]
+          expect(vm.$v.str.$invalid).to.eql(false)
+
+          vm.str = [{
+            name: 'foo',
+            deep: {
+              deepName: '123456789011'
+            }
+          }]
+          expect(vm.$v.str.$invalid).to.eql(true)
+
+          vm.str = [{
+            name: 'foo',
+            deep: {
+              deepName: '12345678'
+            }
           }]
           expect(vm.$v.str.$invalid).to.eql(false)
         })
@@ -841,13 +910,12 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaRequired.type).to.eql('schemaRequired')
+          // vm.str = []
+          // expect(vm.$v.str.$invalid).to.eql(false)
 
           vm.str = ['string', 1]
           // adds $each special rule
-          expect(vm.$v.str.$each[0].name.$params.schemaRequired.type).to.eql('schemaRequired')
           expect(vm.$v.str.$each[0].name.$params.schemaMinLength.type).to.eql('schemaMinLength')
-          expect(vm.$v.str.$each[1].name.$params.schemaRequired.type).to.eql('schemaRequired')
           expect(vm.$v.str.$each[1].name.$params.schemaMinLength.type).to.eql('schemaMinLength')
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [{
