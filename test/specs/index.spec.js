@@ -573,6 +573,40 @@ describe('plugin', function() {
           expect(vm.$v.str.$invalid).to.eql(false)
         })
       })
+
+      describe.only('arrays', function() {
+        it('validates items correctly', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'array',
+                  minItems: 2,
+                  items: {
+                    type: 'number',
+                    minimum: 3
+                  }
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.str.$params.required.type).to.eql('required')
+
+          vm.str = ['string', 1]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = []
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [3]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [3, 2]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [3, 3]
+          expect(vm.$v.str.$invalid).to.eql(false)
+        })
+      })
     })
   })
 })

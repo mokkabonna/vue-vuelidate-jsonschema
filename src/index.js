@@ -1,6 +1,7 @@
 'use strict'
 var mergeStrategy = require('./merge-validation-options')
 var reduce = require('lodash/reduce')
+var every = require('lodash/every')
 var set = require('lodash/set')
 var isEqual = require('lodash/isEqual')
 var isString = require('lodash/isString')
@@ -77,6 +78,20 @@ function equalValidator(equal) {
   })
 }
 
+function itemsValidator(arraySchema) {
+  return vuelidate.withParams({
+    type: 'items',
+    schema: arraySchema
+  }, function(val) {
+    return Array.isArray(val) && val.every(function(item) {
+      var validators = getPropertyValidationRules(arraySchema, arraySchema.items)
+      return every(validators, function(validator) {
+        return validator(item)
+      })
+    })
+  })
+}
+
 function getDefaultValue(schema) {
   if (schema.hasOwnProperty('default')) {
     return schema.default
@@ -118,64 +133,76 @@ function normalizeDirectSchema(schema) {
   }
 }
 
+function getPropertyValidationRules(schema, propertySchema, propKey) {
+  var validationObj = {}
+
+  if (Array.isArray(propertySchema.type)) {
+    validationObj.or = validators.or.apply(validators, propertySchema.type.map(function(type) {
+      return typeValidator(type)
+    }))
+  } else {
+    validationObj.jsonType = typeValidator(propertySchema.type)
+  }
+
+  if (schema.required && schema.required.indexOf(propKey) !== -1) {
+    validationObj.required = validators.requiredIf(function(val) {
+      return this[propKey] === undefined
+    })
+  }
+
+  if (propertySchema.hasOwnProperty('minLength')) {
+    validationObj.required = validators.required
+    validationObj.minLength = validators.minLength(propertySchema.minLength)
+  }
+
+  if (propertySchema.hasOwnProperty('maxLength')) {
+    validationObj.maxLength = validators.maxLength(propertySchema.maxLength)
+  }
+
+  if (propertySchema.hasOwnProperty('minItems')) {
+    validationObj.required = validators.required
+    validationObj.minItems = validators.minLength(propertySchema.minItems)
+  }
+
+  if (propertySchema.hasOwnProperty('maxItems')) {
+    validationObj.maxItems = validators.maxLength(propertySchema.maxItems)
+  }
+
+  if (propertySchema.hasOwnProperty('minimum') && propertySchema.hasOwnProperty('maximum')) {
+    validationObj.between = validators.between(propertySchema.minimum, propertySchema.maximum)
+  } else if (propertySchema.hasOwnProperty('minimum')) {
+    validationObj.required = validators.required // TODO is this correct?
+    validationObj.minimum = minValidator(propertySchema.minimum)
+  } else if (propertySchema.hasOwnProperty('maximum')) {
+    validationObj.maximum = maxValidator(propertySchema.maximum)
+  }
+
+  if (propertySchema.hasOwnProperty('pattern')) {
+    validationObj.pattern = patternValidator(new RegExp(propertySchema.pattern))
+  }
+
+  if (propertySchema.hasOwnProperty('enum')) {
+    validationObj.required = validators.required
+    validationObj.oneOf = oneOfValidator(propertySchema.enum)
+  }
+
+  if (propertySchema.hasOwnProperty('const')) {
+    validationObj.required = validators.required
+    validationObj.equal = equalValidator(propertySchema.const)
+  }
+
+  if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array' && propertySchema.items.type === 'object') {
+    validationObj.$each = getPropertyValidationRules(propertySchema, propertySchema.items)
+  } else if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array') {
+    validationObj.items = itemsValidator(propertySchema)
+  }
+
+  return validationObj
+}
+
 function getValidationRules(schema) {
   return reduce(schema.properties, function(all, propertySchema, propKey) {
-    var validationObj = {}
-
-    if (Array.isArray(propertySchema.type)) {
-      validationObj.or = validators.or.apply(validators, propertySchema.type.map(function(type) {
-        return typeValidator(type)
-      }))
-    } else {
-      validationObj.jsonType = typeValidator(propertySchema.type)
-    }
-
-    if (schema.required && schema.required.indexOf(propKey) !== -1) {
-      validationObj.required = validators.requiredIf(function(val) {
-        return this[propKey] === undefined
-      })
-    }
-
-    if (propertySchema.hasOwnProperty('minLength')) {
-      validationObj.required = validators.required
-      validationObj.minLength = validators.minLength(propertySchema.minLength)
-    }
-
-    if (propertySchema.hasOwnProperty('maxLength')) {
-      validationObj.maxLength = validators.maxLength(propertySchema.maxLength)
-    }
-
-    if (propertySchema.hasOwnProperty('minItems')) {
-      validationObj.required = validators.required
-      validationObj.minItems = validators.minLength(propertySchema.minItems)
-    }
-
-    if (propertySchema.hasOwnProperty('maxItems')) {
-      validationObj.maxItems = validators.maxLength(propertySchema.maxItems)
-    }
-
-    if (propertySchema.hasOwnProperty('minimum') && propertySchema.hasOwnProperty('maximum')) {
-      validationObj.between = validators.between(propertySchema.minimum, propertySchema.maximum)
-    } else if (propertySchema.hasOwnProperty('minimum')) {
-      validationObj.required = validators.required // TODO is this correct?
-      validationObj.minimum = minValidator(propertySchema.minimum)
-    } else if (propertySchema.hasOwnProperty('maximum')) {
-      validationObj.maximum = maxValidator(propertySchema.maximum)
-    }
-
-    if (propertySchema.hasOwnProperty('pattern')) {
-      validationObj.pattern = patternValidator(new RegExp(propertySchema.pattern))
-    }
-
-    if (propertySchema.hasOwnProperty('enum')) {
-      validationObj.required = validators.required
-      validationObj.oneOf = oneOfValidator(propertySchema.enum)
-    }
-
-    if (propertySchema.hasOwnProperty('const')) {
-      validationObj.required = validators.required
-      validationObj.equal = equalValidator(propertySchema.const)
-    }
+    var validationObj = getPropertyValidationRules(schema, propertySchema, propKey)
 
     all[propKey] = validationObj
 
