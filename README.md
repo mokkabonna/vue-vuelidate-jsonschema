@@ -47,7 +47,7 @@ export default {
 }
 ```
 
-Is equal to:
+Is functionally equal to:
 
 ```js
 import {minLength, required} from 'vuelidate/lib/validators'
@@ -75,6 +75,7 @@ export default {
   }
 }
 ```
+
 
 ## Supported json schema validation rules
 
