@@ -4,9 +4,10 @@ var reduce = require('lodash/reduce')
 var every = require('lodash/every')
 var set = require('lodash/set')
 var isEqual = require('lodash/isEqual')
+var cloneDeep = require('lodash/cloneDeep')
 var isString = require('lodash/isString')
 var isPlainObject = require('lodash/isPlainObject')
-var isFunction = require('lodash/isFunction')
+var uniqBy = require('lodash/uniqBy')
 var isBoolean = require('lodash/isBoolean')
 var isFinite = require('lodash/isFinite')
 var isNull = require('lodash/isNull')
@@ -76,6 +77,24 @@ function equalValidator(equal) {
     equal: equal
   }, function(val) {
     return !validators.required(val) || isEqual(equal, val)
+  })
+}
+
+function getUniqueness(item) {
+  if (isPlainObject(item) || Array.isArray(item)) {
+    return JSON.stringify(item)
+  } else {
+    return item
+  }
+}
+
+function uniqueValidator() {
+  return vuelidate.withParams({
+    type: 'unique'
+  }, function(val) {
+    // TODO is array check here ok?
+    if (!Array.isArray(val)) return true
+    return val.length === uniqBy(val, getUniqueness).length
   })
 }
 
@@ -213,6 +232,10 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
   if (propertySchema.hasOwnProperty('const')) {
     validationObj.required = validators.required
     validationObj.equal = equalValidator(propertySchema.const)
+  }
+
+  if (propertySchema.hasOwnProperty('uniqueItems')) {
+    validationObj.unique = uniqueValidator()
   }
 
   if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array' && propertySchema.items.type === 'object') {

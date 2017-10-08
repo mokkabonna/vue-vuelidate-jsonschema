@@ -73,6 +73,7 @@ export default {
 - enum
 - const
 - items
+- uniqueItems
 
 The plan is to support all rules. PR's are welcome.
 
@@ -145,6 +146,10 @@ Now we can utilize vuelidates $each property so that you can get proper error me
 The required property on in json schema only means that the property should be present. Meaning any value that matches the type or types. So adding the property to the required array does not apply the required validator in vuelidate. It only adds a requiredIf that is checks that the value is not undefined. A type validator is added that kicks in if the value is not undefined.
 
 However when using various other validators the required validator is added. Like for instance with the minLength validator. Adding minLength(1) does not actually validate empty strings as falsy, this is because that would overlap with the required validator. So we add them both.
+
+### uniqueItems
+
+Using uniqueItems in a json schema context means that the values are equal in terms of similarity. So an array with two similar objects violates the uniqueItems rule even though they are unique in terms of javascript object identity.
 
 ## Between validator
 

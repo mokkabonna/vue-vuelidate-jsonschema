@@ -574,6 +574,42 @@ describe('plugin', function() {
         })
       })
 
+      describe('uniqueItems', function() {
+        it('adds unique validator', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'array',
+                  uniqueItems: true
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.str.$params.unique.type).to.eql('unique')
+          vm.str = []
+          expect(vm.$v.str.$invalid).to.eql(false)
+          vm.str = undefined
+          expect(vm.$v.str.$invalid).to.eql(false)
+          vm.str = null
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [1, 1]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [true, true]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          // in json schema context the value is considered equal if seemingly same, not strict same
+          vm.str = [{}, {}]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = ['1', 1]
+          expect(vm.$v.str.$invalid).to.eql(false)
+          vm.str = [1, 2, true, false, {}, [], 'str']
+          expect(vm.$v.str.$invalid).to.eql(false)
+        })
+      })
+
       describe('arrays', function() {
         it('validates items correctly', function() {
           var vm = new Vue({
