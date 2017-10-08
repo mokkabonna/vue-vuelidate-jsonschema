@@ -174,7 +174,7 @@ If both the minimum and maximum properties are present the between validator in 
 
 ## Override or extend validation
 
-You can override or extend the validation rules on your vue vm like this:
+You can override, extend or delete the validation rules on your vue vm like this:
 
 ```js
 export default {
