@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha test/specs",
+    "develop": "mocha test/specs --watch",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "author": "Martin Hansen",
