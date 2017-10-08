@@ -1,5 +1,5 @@
 var chai = require('chai')
-var requireUncached = require('require-uncached');
+var requireUncached = require('require-uncached')
 var expect = chai.expect
 var plugin = requireUncached('../../src')
 var Vue = requireUncached('vue')
@@ -196,7 +196,6 @@ describe('plugin', function() {
     })
 
     describe('validation', function() {
-
       it('validates type string', function() {
         var vm = new Vue({
           mixins: [Vuelidate.validationMixin],
@@ -423,7 +422,6 @@ describe('plugin', function() {
         })
       })
 
-
       describe('exclusiveMaximum', function() {
         it('should be tested')
       })
@@ -516,7 +514,6 @@ describe('plugin', function() {
           expect(vm.$v.str.$invalid).to.eql(false)
         })
       })
-
     })
   })
 })

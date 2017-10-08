@@ -3,7 +3,6 @@ var chai = require('chai')
 var expect = chai.expect
 
 describe('merge-validation-options', function() {
-
   it('merges extra properties', function() {
     var result = mergeStrategy({
       conflict: 1,
@@ -47,7 +46,6 @@ describe('merge-validation-options', function() {
     })
   })
 
-
   it('merges object and function', function() {
     var result = mergeStrategy({
       foo: 2
@@ -79,5 +77,4 @@ describe('merge-validation-options', function() {
       foo: 3
     })
   })
-
 })
