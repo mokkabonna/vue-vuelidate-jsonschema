@@ -6,6 +6,7 @@ var set = require('lodash/set')
 var isEqual = require('lodash/isEqual')
 var isString = require('lodash/isString')
 var isPlainObject = require('lodash/isPlainObject')
+var isFunction = require('lodash/isFunction')
 var isBoolean = require('lodash/isBoolean')
 var isFinite = require('lodash/isFinite')
 var isNull = require('lodash/isNull')
@@ -79,14 +80,33 @@ function equalValidator(equal) {
 }
 
 function itemsValidator(arraySchema) {
+  var normalizedSchemas = Array.isArray(arraySchema.items) ? arraySchema.items : [arraySchema.items]
   return vuelidate.withParams({
     type: 'items',
     schema: arraySchema
   }, function(val) {
+    var validatorGroups = normalizedSchemas.map(function(itemSchema) {
+      return getPropertyValidationRules(arraySchema, itemSchema)
+    })
+
+    var validationForGroups = validatorGroups.map(function(validatorSet) {
+      return function(item) {
+        return every(validatorSet, function(validator, key) {
+          if (isPlainObject(validator)) {
+            return every(validator, function(innerValidator) {
+              return innerValidator(item[key])
+            })
+          } else {
+            return validator(item)
+          }
+        })
+      }
+    })
+
     return Array.isArray(val) && val.every(function(item) {
-      var validators = getPropertyValidationRules(arraySchema, arraySchema.items)
-      return every(validators, function(validator) {
-        return validator(item)
+      // Only one of the supplied schemas has to match
+      return validationForGroups.some(function(validationGroup) {
+        return validationGroup(item)
       })
     })
   })
@@ -135,6 +155,10 @@ function normalizeDirectSchema(schema) {
 
 function getPropertyValidationRules(schema, propertySchema, propKey) {
   var validationObj = {}
+
+  if (propertySchema.type === 'object') {
+    return getValidationRules(propertySchema)
+  }
 
   if (Array.isArray(propertySchema.type)) {
     validationObj.or = validators.or.apply(validators, propertySchema.type.map(function(type) {
@@ -192,7 +216,8 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
   }
 
   if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array' && propertySchema.items.type === 'object') {
-    validationObj.$each = getPropertyValidationRules(propertySchema, propertySchema.items)
+    // validationObj.$each = getPropertyValidationRules(propertySchema, propertySchema.items)
+    validationObj.items = itemsValidator(propertySchema)
   } else if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array') {
     validationObj.items = itemsValidator(propertySchema)
   }

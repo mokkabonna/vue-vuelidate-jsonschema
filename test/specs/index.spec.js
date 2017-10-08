@@ -574,7 +574,7 @@ describe('plugin', function() {
         })
       })
 
-      describe.only('arrays', function() {
+      describe('arrays', function() {
         it('validates items correctly', function() {
           var vm = new Vue({
             mixins: [Vuelidate.validationMixin],
@@ -604,6 +604,59 @@ describe('plugin', function() {
           vm.str = [3, 2]
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [3, 3]
+          expect(vm.$v.str.$invalid).to.eql(false)
+        })
+
+        it('validates items correctly when array of schemas', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'array',
+                  minItems: 2,
+                  items: [{
+                    type: 'number',
+                    minimum: 3
+                  }, {
+                    type: 'string',
+                    minLength: 3
+                  }, {
+                    type: 'object',
+                    properties: {
+                      name: {
+                        type: 'string',
+                        minLength: '3'
+                      }
+                    }
+                  }]
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.str.$params.required.type).to.eql('required')
+
+          vm.str = ['string', 1]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = []
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [3]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [3, 2]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [3, 3]
+          expect(vm.$v.str.$invalid).to.eql(false)
+          vm.str = [3, '123']
+          expect(vm.$v.str.$invalid).to.eql(false)
+          vm.str = [3, {
+            name: 'fo'
+          }]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [3, {
+            name: 'foo'
+          }]
           expect(vm.$v.str.$invalid).to.eql(false)
         })
       })
