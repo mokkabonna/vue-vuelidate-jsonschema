@@ -120,7 +120,6 @@ function normalizeDirectSchema(schema) {
 
 function getValidationRules(schema) {
   return reduce(schema.properties, function(all, propertySchema, propKey) {
-
     var validationObj = {}
 
     if (Array.isArray(propertySchema.type)) {
@@ -149,7 +148,7 @@ function getValidationRules(schema) {
     if (propertySchema.hasOwnProperty('minimum') && propertySchema.hasOwnProperty('maximum')) {
       validationObj.between = validators.between(propertySchema.minimum, propertySchema.maximum)
     } else if (propertySchema.hasOwnProperty('minimum')) {
-      validationObj.required = validators.required //TODO is this correct?
+      validationObj.required = validators.required // TODO is this correct?
       validationObj.minimum = minValidator(propertySchema.minimum)
     } else if (propertySchema.hasOwnProperty('maximum')) {
       validationObj.maximum = maxValidator(propertySchema.maximum)
@@ -211,9 +210,7 @@ module.exports = {
             Vue.util.defineReactive(this, prop, data[prop])
           }
         }
-
       }
     })
-
   }
 }
