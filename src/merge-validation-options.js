@@ -32,8 +32,8 @@ module.exports = function(toVal, fromVal) {
   if (isFunction(toVal) || isFunction(fromVal)) {
     retVal = function() {
       var args = [].slice.call(arguments)
-      var toResult = isFunction(toVal) ? toVal.apply(this, arguments) : toVal
-      var fromResult = isFunction(fromVal) ? fromVal.apply(this, arguments) : fromVal
+      var toResult = isFunction(toVal) ? toVal.apply(this, args) : toVal
+      var fromResult = isFunction(fromVal) ? fromVal.apply(this, args) : fromVal
       var merged = mergeWith(toResult, fromResult, customizer)
 
       deleteNoopValidators(merged)

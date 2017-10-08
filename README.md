@@ -76,6 +76,70 @@ export default {
 
 The plan is to support all rules. PR's are welcome.
 
+### items and $each validation
+
+All versions of the items property is supported.
+
+#### single schema and non object
+
+```js
+{
+  type: 'array',
+  items: {
+    type: 'number',
+    minimum: 3
+  }
+}
+```
+
+If the numbers in the array are not minimum 3 or any non numbers are in the array then the array is invalid.
+
+#### multiple schemas
+
+```js
+{
+  type: 'array',
+  items: [{
+    type: 'number',
+    minimum: 3
+  }, {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 3
+      }
+    },
+    required: ['name']
+  }]
+}
+```
+
+If the items in the array are not either a number with minimum value of 3 or an object with name and minLength of 3 then the array is invalid.
+
+We can't expose any errors on the object itself if present, due to vuelidates limitation with the use of the $each keyword that requires all objects to be the same. Se next section.
+
+#### single schema and type object
+
+```js
+{
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 3
+      }
+    },
+    required: ['name']
+  }
+}
+```
+
+Now we can utilize vuelidates $each property so that you can get proper error messages for properties on the objects in the array.
+
+
 ### Required property in json schema context
 
 The required property on in json schema only means that the property should be present. Meaning any value that matches the type or types. So adding the property to the required array does not apply the required validator in vuelidate. It only adds a requiredIf that is checks that the value is not undefined. A type validator is added that kicks in if the value is not undefined.

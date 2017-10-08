@@ -216,8 +216,7 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
   }
 
   if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array' && propertySchema.items.type === 'object') {
-    // validationObj.$each = getPropertyValidationRules(propertySchema, propertySchema.items)
-    validationObj.items = itemsValidator(propertySchema)
+    validationObj.$each = getValidationRules(propertySchema.items)
   } else if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array') {
     validationObj.items = itemsValidator(propertySchema)
   }

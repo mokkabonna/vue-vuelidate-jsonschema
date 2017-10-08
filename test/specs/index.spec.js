@@ -659,6 +659,48 @@ describe('plugin', function() {
           }]
           expect(vm.$v.str.$invalid).to.eql(false)
         })
+
+        it('validates items correctly when single schema and type object', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'array',
+                  minItems: 1,
+                  items: {
+                    type: 'object',
+                    properties: {
+                      name: {
+                        type: 'string',
+                        minLength: '3'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.str.$params.required.type).to.eql('required')
+
+          vm.str = ['string', 1]
+          // adds $each special rule
+          expect(vm.$v.str.$each[0].name.$params.required.type).to.eql('required')
+          expect(vm.$v.str.$each[0].name.$params.minLength.type).to.eql('minLength')
+          expect(vm.$v.str.$each[1].name.$params.required.type).to.eql('required')
+          expect(vm.$v.str.$each[1].name.$params.minLength.type).to.eql('minLength')
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [{
+            name: 'fo'
+          }]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [{
+            name: 'foo'
+          }]
+          expect(vm.$v.str.$invalid).to.eql(false)
+        })
       })
     })
   })
