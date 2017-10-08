@@ -272,6 +272,8 @@ export default {
 }
 ```
 
+This exposes prop1 at **vm.deep.nested.structure.prop1** and prop2 at **vm.other.deep.stucture.prop2**
+
 
 ## vuelidate error extractor
 
