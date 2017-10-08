@@ -2,7 +2,7 @@
 
 > Create validation rules based on json schema
 
-Use the json schemas you already have for validation your api input to generate validation rules for vuelidate. And use default value to generate the data attributes.
+Use the json schemas you already have for validating your api input to generate validation rules for vuelidate. And use default values to generate the data attributes.
 
 ## Example
 ```js
@@ -34,7 +34,7 @@ Is equal to:
 
 ```js
 import {minLength, required} from 'vuelidate/lib/validators'
-import {pattern, mimimum, maximum} from 'vue-vuelidate-jsonschema'
+import {pattern} from 'vue-vuelidate-jsonschema'
 
 export default {
   data() {
