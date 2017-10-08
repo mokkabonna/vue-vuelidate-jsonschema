@@ -274,6 +274,32 @@ export default {
 This exposes prop1 at **vm.deep.nested.structure.prop1** and prop2 at **vm.other.deep.stucture.prop2**
 
 
+## Loading async schemas
+
+Promises are supported, just define your schema like this:
+
+```js
+export default {
+  schema: [
+    fetchSchema('http://example.com/schema-1.json'), // will get root mount point
+    fetchSchema('http://example.com/schema-2.json').then(function(schema) {
+      //return a schema config object
+      return {
+        mountPoint: 'form2', //mounts to form2 property
+        schema: schema
+      }
+    })
+  ]
+}
+```
+
+Where fetchSchema returns a promise that resolves to a schema or a schema config object. You can also use this to
+
+### Loading related schemas
+
+If one of your schemas contain a $ref property you can then resolve those manually in the promise or use [json-schema-ref-parser](https://github.com/BigstickCarpet/json-schema-ref-parser) to dereference your schema for you.
+
+
 ## vuelidate error extractor
 
 I recommend to use [vuelidate-error-extractor](https://github.com/dobromir-hristov/vuelidate-error-extractor) to display error messages. This takes the pain out of the manual labor of writing validation messages for each property and rule.
@@ -281,11 +307,12 @@ I recommend to use [vuelidate-error-extractor](https://github.com/dobromir-hrist
 ## Roadmap
 
 - [ ] support all json schema validation properties
-- [ ] support loading of remote schemas
-- [ ] support $ref inside schemas
+- [x] support loading of remote schemas
+- [x] support $ref inside schemas (will not support, but added docs for resolving refs with third party module)
 - [ ] export own validators
 - [ ] more tests for really complex schemas
 - [x] document and test mounting procedure (multiple schemas in one vm)
+- [ ] possibly support and test circular $refs
 - [ ] better validation params for array items validation (when not object)
 - [ ] document exactly what validators are used for any json schema validation property
 - [ ] pass title, description etc to the validator as params (possibly whole property schema)

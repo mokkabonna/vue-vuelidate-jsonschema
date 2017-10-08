@@ -17,6 +17,74 @@ describe('plugin', function() {
       Vue.use(Vuelidate) // TODO seemingly does nothing is testing context, using mixin instead
     })
 
+    it('supports awaiting promises', function() {
+      var schemaPromise = new Promise(function(resolve) {
+        resolve({
+          type: 'object',
+          properties: {
+            prop1: {
+              type: 'string',
+              minLength: 3,
+              default: '123'
+            }
+          }
+        })
+      })
+
+      var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
+        schema: schemaPromise
+      })
+
+      return vm.$schema.then(function() {
+        expect(vm.prop1).to.eql('123')
+      })
+    })
+
+    it('supports awaiting awaiting multiple promises', function() {
+      var schemaPromise = new Promise(function(resolve) {
+        resolve({
+          type: 'object',
+          properties: {
+            prop1: {
+              type: 'string',
+              minLength: 3,
+              default: '123'
+            }
+          }
+        })
+      })
+
+      var promise2 = new Promise(function(resolve) {
+        resolve({
+          type: 'object',
+          properties: {
+            prop2: {
+              type: 'string',
+              minLength: 7,
+              default: 'abc'
+            }
+          }
+        })
+      })
+
+      var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
+        schema: [schemaPromise, promise2]
+      })
+
+      return vm.$schema.then(function() {
+        expect(vm.prop1).to.eql('123')
+        expect(vm.$v.prop1.$invalid).to.eql(false)
+        vm.prop1 = '12'
+        expect(vm.$v.prop1.$invalid).to.eql(true)
+        expect(vm.prop2).to.eql('abc')
+        expect(vm.$v.prop2.$invalid).to.eql(true)
+        vm.prop2 = '1234567'
+        expect(vm.$v.prop2.$invalid).to.eql(false)
+      })
+    })
+
     it('exposes json property schema as params', function() {
       var propSchema = {
         type: 'integer',
@@ -40,10 +108,9 @@ describe('plugin', function() {
     it('adds properties to data object', function() {
       var vm = new Vue({
         data() {
-          return {
-            existing: 7
-          }
+          return {existing: 7}
         },
+        mixins: [Vuelidate.validationMixin],
         schema: {
           type: 'object',
           properties: {
@@ -75,6 +142,7 @@ describe('plugin', function() {
 
     it('supports default value from schema', function() {
       var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
         schema: {
           type: 'object',
           properties: {
@@ -91,8 +159,8 @@ describe('plugin', function() {
 
     it('supports nesting', function() {
       var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
         schema: {
-
           type: 'object',
           properties: {
             obj1: {
@@ -107,13 +175,12 @@ describe('plugin', function() {
         }
       })
 
-      expect(vm.obj1).to.eql({
-        prop1: ''
-      })
+      expect(vm.obj1).to.eql({prop1: ''})
     })
 
     it('supports schema directly', function() {
       var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
         schema: {
           type: 'object',
           properties: {
@@ -130,30 +197,32 @@ describe('plugin', function() {
     it('supports multiple schemas on root without defining mountPoint', function() {
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
-        schema: [{
-          type: 'object',
-          properties: {
-            str: {
-              type: 'string'
-            },
-            conflict: {
-              type: 'string',
-              minLength: 3,
-              maxLength: 5
+        schema: [
+          {
+            type: 'object',
+            properties: {
+              str: {
+                type: 'string'
+              },
+              conflict: {
+                type: 'string',
+                minLength: 3,
+                maxLength: 5
+              }
+            }
+          }, {
+            type: 'object',
+            properties: {
+              str2: {
+                type: 'string'
+              },
+              conflict: {
+                type: 'string',
+                maxLength: 10
+              }
             }
           }
-        }, {
-          type: 'object',
-          properties: {
-            str2: {
-              type: 'string'
-            },
-            conflict: {
-              type: 'string',
-              maxLength: 10
-            }
-          }
-        }]
+        ]
       })
 
       expect(vm.str).to.eql('')
@@ -170,18 +239,20 @@ describe('plugin', function() {
     it('supports deep mounted schema', function() {
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
-        schema: [{
-          mountPoint: 'foo.bar.baz',
-          schema: {
-            type: 'object',
-            properties: {
-              str: {
-                type: 'string',
-                default: 'abc'
+        schema: [
+          {
+            mountPoint: 'foo.bar.baz',
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'string',
+                  default: 'abc'
+                }
               }
             }
           }
-        }]
+        ]
       })
 
       expect(vm.foo.bar.baz.str).to.eql('abc')
@@ -191,29 +262,31 @@ describe('plugin', function() {
     it('supports multiple schemas', function() {
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
-        schema: [{
-          mountPoint: 'foo.bar.baz',
-          schema: {
-            type: 'object',
-            properties: {
-              str: {
-                type: 'string',
-                default: 'abc'
+        schema: [
+          {
+            mountPoint: 'foo.bar.baz',
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'string',
+                  default: 'abc'
+                }
+              }
+            }
+          }, {
+            mountPoint: 'a.b.c',
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'string',
+                  default: 'abc'
+                }
               }
             }
           }
-        }, {
-          mountPoint: 'a.b.c',
-          schema: {
-            type: 'object',
-            properties: {
-              str: {
-                type: 'string',
-                default: 'abc'
-              }
-            }
-          }
-        }]
+        ]
       })
 
       expect(vm.foo.bar.baz.str).to.eql('abc')
@@ -712,16 +785,21 @@ describe('plugin', function() {
           vm.str = [{}, {}]
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [
-            [],
-            []
+            [], []
           ]
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [null, null]
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = ['1', 1]
           expect(vm.$v.str.$invalid).to.eql(false)
-          vm.str = [1, 2, true, false, {},
-            [], 'str'
+          vm.str = [
+            1,
+            2,
+            true,
+            false,
+            {},
+            [],
+            'str'
           ]
           expect(vm.$v.str.$invalid).to.eql(false)
         })
@@ -770,21 +848,23 @@ describe('plugin', function() {
                 str: {
                   type: 'array',
                   minItems: 2,
-                  items: [{
-                    type: 'number',
-                    minimum: 3
-                  }, {
-                    type: 'string',
-                    minLength: 3
-                  }, {
-                    type: 'object',
-                    properties: {
-                      name: {
-                        type: 'string',
-                        minLength: 3
+                  items: [
+                    {
+                      type: 'number',
+                      minimum: 3
+                    }, {
+                      type: 'string',
+                      minLength: 3
+                    }, {
+                      type: 'object',
+                      properties: {
+                        name: {
+                          type: 'string',
+                          minLength: 3
+                        }
                       }
                     }
-                  }]
+                  ]
                 }
               }
             }
@@ -805,13 +885,17 @@ describe('plugin', function() {
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = [3, '123']
           expect(vm.$v.str.$invalid).to.eql(false)
-          vm.str = [3, {
-            name: 'fo'
-          }]
+          vm.str = [
+            3, {
+              name: 'fo'
+            }
+          ]
           expect(vm.$v.str.$invalid).to.eql(true)
-          vm.str = [3, {
-            name: 'foo'
-          }]
+          vm.str = [
+            3, {
+              name: 'foo'
+            }
+          ]
           expect(vm.$v.str.$invalid).to.eql(false)
         })
 
@@ -824,24 +908,26 @@ describe('plugin', function() {
                 str: {
                   type: 'array',
                   minItems: 1,
-                  items: [{
-                    type: 'object',
-                    properties: {
-                      name: {
-                        type: 'string',
-                        minLength: 3
-                      },
-                      deep: {
-                        type: 'object',
-                        properties: {
-                          deepName: {
-                            type: 'string',
-                            maxLength: 10
+                  items: [
+                    {
+                      type: 'object',
+                      properties: {
+                        name: {
+                          type: 'string',
+                          minLength: 3
+                        },
+                        deep: {
+                          type: 'object',
+                          properties: {
+                            deepName: {
+                              type: 'string',
+                              maxLength: 10
+                            }
                           }
                         }
                       }
                     }
-                  }]
+                  ]
                 }
               }
             }
@@ -850,40 +936,50 @@ describe('plugin', function() {
           expect(vm.$v.str.$params.schemaItems.type).to.eql('schemaItems')
           vm.str = undefined
           expect(vm.$v.str.$invalid).to.eql(false)
-          vm.str = [{
-            name: 'foo'
-            // deep is not required
-          }]
+          vm.str = [
+            {
+              name: 'foo'
+              // deep is not required
+            }
+          ]
           expect(vm.$v.str.$invalid).to.eql(false)
 
-          vm.str = [{
-            name: 'foo',
-            deep: [] // deep must be object
-          }]
+          vm.str = [
+            {
+              name: 'foo',
+              deep: [] // deep must be object
+            }
+          ]
           expect(vm.$v.str.$invalid).to.eql(true)
 
-          vm.str = [{
-            name: 'foo',
-            deep: {
-              // deepName is not required
+          vm.str = [
+            {
+              name: 'foo',
+              deep: {
+                // deepName is not required
+              }
             }
-          }]
+          ]
           expect(vm.$v.str.$invalid).to.eql(false)
 
-          vm.str = [{
-            name: 'foo',
-            deep: {
-              deepName: '123456789011'
+          vm.str = [
+            {
+              name: 'foo',
+              deep: {
+                deepName: '123456789011'
+              }
             }
-          }]
+          ]
           expect(vm.$v.str.$invalid).to.eql(true)
 
-          vm.str = [{
-            name: 'foo',
-            deep: {
-              deepName: '12345678'
+          vm.str = [
+            {
+              name: 'foo',
+              deep: {
+                deepName: '12345678'
+              }
             }
-          }]
+          ]
           expect(vm.$v.str.$invalid).to.eql(false)
         })
 
@@ -918,13 +1014,17 @@ describe('plugin', function() {
           expect(vm.$v.str.$each[0].name.$params.schemaMinLength.type).to.eql('schemaMinLength')
           expect(vm.$v.str.$each[1].name.$params.schemaMinLength.type).to.eql('schemaMinLength')
           expect(vm.$v.str.$invalid).to.eql(true)
-          vm.str = [{
-            name: 'fo'
-          }]
+          vm.str = [
+            {
+              name: 'fo'
+            }
+          ]
           expect(vm.$v.str.$invalid).to.eql(true)
-          vm.str = [{
-            name: 'foo'
-          }]
+          vm.str = [
+            {
+              name: 'foo'
+            }
+          ]
           expect(vm.$v.str.$invalid).to.eql(false)
         })
       })

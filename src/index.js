@@ -6,8 +6,10 @@ var merge = require('lodash/merge')
 var set = require('lodash/set')
 var get = require('lodash/get')
 var isEqual = require('lodash/isEqual')
+var omit = require('lodash/omit')
 var isString = require('lodash/isString')
 var isPlainObject = require('lodash/isPlainObject')
+var isFunction = require('lodash/isFunction')
 var uniqBy = require('lodash/uniqBy')
 var isBoolean = require('lodash/isBoolean')
 var isFinite = require('lodash/isFinite')
@@ -151,14 +153,16 @@ function uniqueValidator(propertySchema) {
     schema: propertySchema
   }, function(val) {
     // TODO is array check here ok?
-    if (!Array.isArray(val)) return true
-    if (val.length < 2) return true
+    if (!Array.isArray(val)) { return true }
+    if (val.length < 2) { return true }
     return val.length === uniqBy(val, getUniqueness).length
   })
 }
 
 function itemsValidator(arraySchema) {
-  var normalizedSchemas = Array.isArray(arraySchema.items) ? arraySchema.items : [arraySchema.items]
+  var normalizedSchemas = Array.isArray(arraySchema.items)
+    ? arraySchema.items
+    : [arraySchema.items]
   return vuelidate.withParams({
     type: 'schemaItems',
     schema: arraySchema
@@ -178,7 +182,7 @@ function itemsValidator(arraySchema) {
     function validateGroup(item, validator, key) {
       if (isPlainObject(validator)) {
         return every(validator, function(innerValidator, innerKey) {
-          if (item[key] === undefined) return true
+          if (item[key] === undefined) { return true }
           return validateGroup(item[key], innerValidator, innerKey)
         })
       } else {
@@ -246,17 +250,16 @@ function normalizeSchemas(schemaConfig) {
       if (config.mountPoint) {
         return config
       } else {
-        return {
-          mountPoint: '.',
-          schema: config
-        }
+        return {mountPoint: '.', schema: config}
       }
     })
   } else {
-    return [{
-      mountPoint: '.',
-      schema: schemaConfig
-    }]
+    return [
+      {
+        mountPoint: '.',
+        schema: schemaConfig
+      }
+    ]
   }
 }
 
@@ -377,22 +380,46 @@ module.exports = {
 
     Vue.config.optionMergeStrategies.validations = mergeStrategy
 
+    function generateDataStructure(self) {
+      var dataStructure = createDataProperties(self.$schema)
+      defineReactives(self, dataStructure)
+    }
+
     Vue.mixin({
       validations() {
-        if (this.schema) {
-          return generateValidationSchema(this.schema)
+        if (this.$schema) {
+          return generateValidationSchema(this.$schema)
         } else {
           return {}
         }
       },
       beforeCreate() {
-        if (!this.$options.schema) return
+        var self = this
+        if (!this.$options.schema) { return }
         var normalized = normalizeSchemas(this.$options.schema)
-        var dataStructure = createDataProperties(normalized)
 
-        // rewrite schemas normalized
-        this.schema = normalized
-        defineReactives(this, dataStructure)
+        var hasPromise = normalized.some(function(schemaConfig) {
+          return isFunction(schemaConfig.schema.then)
+        })
+
+        if (hasPromise) {
+          var allSchemaPromise = Promise.all(normalized.map(function(schemaConfig) {
+            return schemaConfig.schema.then(function(schema) {
+              var newConfig = omit(schemaConfig, 'schema')
+              newConfig.schema = schema
+              return newConfig
+            })
+          })).then(function(schemaConfigs) {
+            self.$schema = schemaConfigs
+            generateDataStructure(self)
+          })
+
+          Vue.util.defineReactive(this, '$schema', allSchemaPromise)
+        } else {
+          // rewrite schemas normalized
+          Vue.util.defineReactive(this, '$schema', normalized)
+          generateDataStructure(this)
+        }
       }
     })
   }
