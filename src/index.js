@@ -12,9 +12,7 @@ var uniqBy = require('lodash/uniqBy')
 var isBoolean = require('lodash/isBoolean')
 var isFinite = require('lodash/isFinite')
 var isNull = require('lodash/isNull')
-var omit = require('lodash/omit')
 var isInteger = require('lodash/isInteger')
-var values = require('lodash/values')
 var validators = require('vuelidate/lib/validators')
 var vuelidate = require('vuelidate')
 
@@ -28,87 +26,105 @@ var jsonTypes = {
   integer: isInteger
 }
 
-var validatorMapping = {
-  minimum: minValidator,
-  maximum: maxValidator,
-  required: validators.required,
-  requiredIf: validators.requiredIf,
-  requiredUnless: validators.requiredUnless,
-  minLength: validators.minLength,
-  maxLength: validators.maxLength,
-  jsonType: typeValidator,
-  pattern: patternValidator,
-  oneOf: oneOfValidator,
-  equal: equalValidator,
-  unique: uniqueValidator,
-  items: itemsValidator
+function noParamsRequired(val) {
+  return val !== undefined
 }
 
-function typeValidator(type) {
+function requiredValidator(propertySchema) {
   return vuelidate.withParams({
-    type: 'jsonType',
-    jsonType: type
-  }, function(val) {
-    return val === undefined || jsonTypes[type](val)
-  })
-}
-
-/**
- * Wraps existing validators so that we can expose the json schema as a param
- */
-function jsonSchemaValidator(propertySchema, params) {
-  var validator = validatorMapping[params.type]
-  // TODO are order always guaranteed here??
-  var subParams = values(omit(params, 'type'))
-
-  return vuelidate.withParams(Object.assign({
-    metaType: 'jsonSchemaValidator',
+    type: 'schemaRequired',
     schema: propertySchema
-  }, params), validator.apply(null, subParams))
+  }, noParamsRequired)
 }
 
-function minValidator(min) {
+function minLengthValidator(propertySchema, min) {
   return vuelidate.withParams({
-    type: 'minimum',
+    type: 'schemaMinLength',
+    schema: propertySchema,
     min: min
   }, function(val) {
-    return !validators.required(val) || val >= min
+    return !noParamsRequired(val) || (val && val.hasOwnProperty('length') && val.length >= min)
   })
 }
 
-function maxValidator(max) {
+function maxLengthValidator(propertySchema, max) {
   return vuelidate.withParams({
-    type: 'maximum',
+    type: 'schemaMaxLength',
+    schema: propertySchema,
     max: max
   }, function(val) {
-    return !validators.required(val) || val <= max
+    return !noParamsRequired(val) || (val && val.hasOwnProperty('length') && val.length <= max)
   })
 }
 
-function patternValidator(pattern) {
+function typeValidator(propertySchema, type) {
   return vuelidate.withParams({
-    type: 'pattern',
-    pattern: pattern
+    type: 'schemaType',
+    jsonType: type,
+    schema: propertySchema
+  }, function(val) {
+    return !noParamsRequired(val) || jsonTypes[type](val)
+  })
+}
+
+function minValidator(propertySchema, min) {
+  return vuelidate.withParams({
+    type: 'schemaMinimum',
+    min: min,
+    schema: propertySchema
+  }, function(val) {
+    return !noParamsRequired(val) || val >= min
+  })
+}
+
+function betweenValidator(propertySchema, min, max) {
+  return vuelidate.withParams({
+    type: 'schemaBetween',
+    min: min,
+    max: max,
+    schema: propertySchema
+  }, function(val) {
+    return !noParamsRequired(val) || (val >= min && val <= max)
+  })
+}
+
+function maxValidator(propertySchema, max) {
+  return vuelidate.withParams({
+    type: 'schemaMaximum',
+    max: max,
+    schema: propertySchema
+  }, function(val) {
+    return !noParamsRequired(val) || val <= max
+  })
+}
+
+function patternValidator(propertySchema, pattern) {
+  return vuelidate.withParams({
+    type: 'schemaPattern',
+    pattern: pattern,
+    schema: propertySchema
   }, function(val) {
     return isString(val) && pattern.test(val)
   })
 }
 
-function oneOfValidator(choices) {
+function oneOfValidator(propertySchema, choices) {
   return vuelidate.withParams({
-    type: 'oneOf',
-    choices: choices
+    type: 'schemaOneOf',
+    choices: choices,
+    schema: propertySchema
   }, function(val) {
-    return !validators.required(val) || choices.indexOf(val) !== -1
+    return !noParamsRequired(val) || choices.indexOf(val) !== -1
   })
 }
 
-function equalValidator(equal) {
+function equalValidator(propertySchema, equal) {
   return vuelidate.withParams({
-    type: 'equal',
-    equal: equal
+    type: 'schemaEqual',
+    equal: equal,
+    schema: propertySchema
   }, function(val) {
-    return !validators.required(val) || isEqual(equal, val)
+    return !noParamsRequired(val) || isEqual(equal, val)
   })
 }
 
@@ -120,12 +136,14 @@ function getUniqueness(item) {
   }
 }
 
-function uniqueValidator() {
+function uniqueValidator(propertySchema) {
   return vuelidate.withParams({
-    type: 'unique'
+    type: 'schemaUnique',
+    schema: propertySchema
   }, function(val) {
     // TODO is array check here ok?
     if (!Array.isArray(val)) return true
+    if (val.length < 2) return true
     return val.length === uniqBy(val, getUniqueness).length
   })
 }
@@ -133,7 +151,7 @@ function uniqueValidator() {
 function itemsValidator(arraySchema) {
   var normalizedSchemas = Array.isArray(arraySchema.items) ? arraySchema.items : [arraySchema.items]
   return vuelidate.withParams({
-    type: 'items',
+    type: 'schemaItems',
     schema: arraySchema
   }, function(val) {
     var validatorGroups = normalizedSchemas.map(function(itemSchema) {
@@ -229,70 +247,59 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
 
   if (Array.isArray(propertySchema.type)) {
     validationObj.or = validators.or.apply(validators, propertySchema.type.map(function(type) {
-      return typeValidator(type)
+      return typeValidator(propertySchema, type)
     }))
   } else {
-    validationObj.jsonType = jsonSchemaValidator(propertySchema, {
-      type: 'jsonType',
-      jsonType: propertySchema.type
-    })
+    validationObj.schemaType = typeValidator(propertySchema, propertySchema.type)
   }
 
   if (schema.required && schema.required.indexOf(propKey) !== -1) {
-    validationObj.required = jsonSchemaValidator(propertySchema, {
-      type: 'requiredIf',
-      prop: function() {
-        return this[propKey] === undefined
-      }
-    })
+    validationObj.required = requiredValidator(propertySchema)
   }
 
   if (propertySchema.hasOwnProperty('minLength')) {
-    validationObj.required = validators.required
-    validationObj.minLength = validators.minLength(propertySchema.minLength)
+    validationObj.required = requiredValidator(propertySchema)
+    validationObj.minLength = minLengthValidator(propertySchema, propertySchema.minLength)
   }
 
   if (propertySchema.hasOwnProperty('maxLength')) {
-    validationObj.maxLength = validators.maxLength(propertySchema.maxLength)
+    validationObj.maxLength = maxLengthValidator(propertySchema, propertySchema.maxLength)
   }
 
   if (propertySchema.hasOwnProperty('minItems')) {
-    validationObj.required = validators.required
-    validationObj.minItems = validators.minLength(propertySchema.minItems)
+    validationObj.required = requiredValidator(propertySchema)
+    validationObj.minItems = minLengthValidator(propertySchema, propertySchema.minItems)
   }
 
   if (propertySchema.hasOwnProperty('maxItems')) {
-    validationObj.maxItems = validators.maxLength(propertySchema.maxItems)
+    validationObj.maxItems = maxLengthValidator(propertySchema, propertySchema.maxItems)
   }
 
   if (propertySchema.hasOwnProperty('minimum') && propertySchema.hasOwnProperty('maximum')) {
-    validationObj.between = validators.between(propertySchema.minimum, propertySchema.maximum)
+    validationObj.between = betweenValidator(propertySchema, propertySchema.minimum, propertySchema.maximum)
   } else if (propertySchema.hasOwnProperty('minimum')) {
-    validationObj.required = validators.required // TODO is this correct?
-    validationObj.minimum = jsonSchemaValidator(propertySchema, {
-      type: 'minimum',
-      min: propertySchema.minimum
-    })
+    validationObj.required = requiredValidator(propertySchema) // TODO is this correct?
+    validationObj.minimum = minValidator(propertySchema, propertySchema.minimum)
   } else if (propertySchema.hasOwnProperty('maximum')) {
-    validationObj.maximum = maxValidator(propertySchema.maximum)
+    validationObj.maximum = maxValidator(propertySchema, propertySchema.maximum)
   }
 
   if (propertySchema.hasOwnProperty('pattern')) {
-    validationObj.pattern = patternValidator(new RegExp(propertySchema.pattern))
+    validationObj.pattern = patternValidator(propertySchema, new RegExp(propertySchema.pattern))
   }
 
   if (propertySchema.hasOwnProperty('enum')) {
-    validationObj.required = validators.required
-    validationObj.oneOf = oneOfValidator(propertySchema.enum)
+    validationObj.required = requiredValidator(propertySchema)
+    validationObj.oneOf = oneOfValidator(propertySchema, propertySchema.enum)
   }
 
   if (propertySchema.hasOwnProperty('const')) {
-    validationObj.required = validators.required
-    validationObj.equal = equalValidator(propertySchema.const)
+    validationObj.required = requiredValidator(propertySchema)
+    validationObj.equal = equalValidator(propertySchema, propertySchema.const)
   }
 
   if (propertySchema.hasOwnProperty('uniqueItems')) {
-    validationObj.unique = uniqueValidator()
+    validationObj.unique = uniqueValidator(propertySchema)
   }
 
   if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array' && propertySchema.items.type === 'object') {
