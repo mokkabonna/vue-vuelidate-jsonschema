@@ -598,10 +598,16 @@ describe('plugin', function() {
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [1, 1]
           expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = ['fds', 'fds']
+          expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [true, true]
           expect(vm.$v.str.$invalid).to.eql(true)
           // in json schema context the value is considered equal if seemingly same, not strict same
           vm.str = [{}, {}]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [[], []]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [null, null]
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = ['1', 1]
           expect(vm.$v.str.$invalid).to.eql(false)
