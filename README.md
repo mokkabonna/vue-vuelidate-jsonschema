@@ -110,3 +110,13 @@ export default {
 ```
 
 Keep in mind that for instance json schema minLength validator adds both minLength and required validator. So you need to remove both if that is what you want.
+
+
+
+## Contributing
+
+Create tests for new functionality and follow the eslint rules.
+
+## License
+
+MIT © [Martin Hansen](http://martinhansen.com)
