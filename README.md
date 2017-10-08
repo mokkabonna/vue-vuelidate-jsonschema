@@ -77,7 +77,7 @@ export default {
 - items
 - uniqueItems
 
-The plan is to support all rules. PR's are welcome.
+The plan is to support all rules. PR's are welcome. When matching validation rules are present in vuelidate, those are used. For other validations this library have quite a few of its own.
 
 ### items and $each validation
 
@@ -185,6 +185,10 @@ export default {
 
 Keep in mind that for instance json schema minLength validator adds both minLength and required validator. So you need to remove both if that is what you want.
 
+
+## vuelidate error extractor
+
+I recommend to use [vuelidate-error-extractor](https://github.com/dobromir-hristov/vuelidate-error-extractor) to display error messages. This takes the pain out of the manual labor of writing validation messages for each property and rule.
 
 
 ## Contributing
