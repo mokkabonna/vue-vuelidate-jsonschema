@@ -6,6 +6,21 @@ Use the json schemas you already have for validating your api input to generate 
 
 The goal is that if your vuelidate validation is valid then you will also pass validation against the json schema. So you can with confidence serialize your model to json and the server will accept it if it validates agains the same schema.
 
+```bash
+npm install vue-vuelidate-jsonschema
+```
+
+Install plugin
+
+```js
+import Vue from 'vue'
+import VueVuelidateJsonschema from 'vue-vuelidate-jsonschema'
+import Vuelidate from 'vuelidate'
+
+vue.use(Vuelidate)
+Vue.use(VueVuelidateJsonschema)
+```
+
 ## Example
 ```js
 export default {
@@ -185,10 +200,27 @@ export default {
 
 Keep in mind that for instance json schema minLength validator adds both minLength and required validator. So you need to remove both if that is what you want.
 
+This merging of validation options works by adding a custom merge strategy for vue options that merges them correctly.
+
+This works also if your validations property is a function.
+
 
 ## vuelidate error extractor
 
 I recommend to use [vuelidate-error-extractor](https://github.com/dobromir-hristov/vuelidate-error-extractor) to display error messages. This takes the pain out of the manual labor of writing validation messages for each property and rule.
+
+## Roadmap
+
+- [ ] support all json schema validation properties
+- [ ] support loading of remote schemas
+- [ ] support $ref inside schemas
+- [ ] export own validators
+- [ ] more tests for really complex schemas
+- [ ] document and test mounting procedure (multiple schemas in one vm)
+- [ ] better validation params for array items validation (when not object)
+
+
+PRs are welcome.
 
 
 ## Contributing
