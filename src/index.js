@@ -163,11 +163,12 @@ function itemsValidator(arraySchema) {
   var normalizedSchemas = Array.isArray(arraySchema.items)
     ? arraySchema.items
     : [arraySchema.items]
+
   return vuelidate.withParams({
     type: 'schemaItems',
     schema: arraySchema
   }, function(val) {
-    if (val === undefined) {
+    if (!noParamsRequired(val)) {
       return true
     }
 

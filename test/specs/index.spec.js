@@ -997,7 +997,7 @@ describe('plugin', function() {
                     properties: {
                       name: {
                         type: 'string',
-                        minLength: '3'
+                        minLength: 3
                       }
                     }
                   }
@@ -1006,7 +1006,8 @@ describe('plugin', function() {
             }
           })
 
-          // vm.str = []
+          // TODO: fix this assertion
+          // vm.str = undefined
           // expect(vm.$v.str.$invalid).to.eql(false)
 
           vm.str = ['string', 1]
