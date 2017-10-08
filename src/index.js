@@ -3,6 +3,7 @@ var mergeStrategy = require('./merge-validation-options')
 var reduce = require('lodash/reduce')
 var every = require('lodash/every')
 var set = require('lodash/set')
+var get = require('lodash/get')
 var isEqual = require('lodash/isEqual')
 var isString = require('lodash/isString')
 var isPlainObject = require('lodash/isPlainObject')
@@ -156,7 +157,12 @@ function setProperties(base, schema) {
 
 function createDataProperties(schemas) {
   return reduce(schemas, function(all, schema, mountPoint) {
-    setProperties(all, schema)
+    if (mountPoint !== '.') {
+      set(all, mountPoint, {}) // TODO support non object schemas
+      setProperties(get(all, mountPoint), schema)
+    } else {
+      setProperties(all, schema)
+    }
     return all
   }, {})
 }
@@ -257,7 +263,11 @@ function getValidationRules(schema) {
 }
 
 function generateValidationSchema(schemas) {
-  var root = getValidationRules(schemas['.']) || {}
+  var root = {}
+
+  if (schemas['.']) {
+    root = getValidationRules(schemas['.'])
+  }
 
   return reduce(omit(schemas, '.'), function(all, schema, mountPoint) {
     set(all, mountPoint, getValidationRules(schema))
@@ -268,6 +278,17 @@ function generateValidationSchema(schemas) {
 module.exports = {
   install: function(Vue, options) {
     options = options || {}
+
+    function defineReactives(parent, obj) {
+      for (var prop in obj) {
+        if (obj.hasOwnProperty(prop)) {
+          Vue.util.defineReactive(parent, prop, obj[prop])
+          if (isPlainObject(obj[prop])) {
+            defineReactives(parent[prop], obj[prop])
+          }
+        }
+      }
+    }
 
     Vue.config.optionMergeStrategies.validations = mergeStrategy
 
@@ -282,16 +303,11 @@ module.exports = {
       beforeCreate() {
         if (!this.$options.schema) return
         var normalized = isRootSchema(this.$options.schema) ? normalizeDirectSchema(this.$options.schema) : this.$options.schema
-        var data = createDataProperties(normalized)
+        var dataStructure = createDataProperties(normalized)
 
         // expose schemas normalized
         Vue.util.defineReactive(this, 'schemas', normalized)
-
-        for (var prop in data) {
-          if (data.hasOwnProperty(prop)) {
-            Vue.util.defineReactive(this, prop, data[prop])
-          }
-        }
+        defineReactives(this, dataStructure)
       }
     })
   }

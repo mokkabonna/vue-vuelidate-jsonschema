@@ -112,6 +112,57 @@ describe('plugin', function() {
       expect(vm.str).to.eql('')
     })
 
+    it('supports deep mounted schema', function() {
+      var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
+        schema: {
+          'foo.bar.baz': {
+            type: 'object',
+            properties: {
+              str: {
+                type: 'string',
+                default: 'abc'
+              }
+            }
+          }
+        }
+      })
+
+      expect(vm.foo.bar.baz.str).to.eql('abc')
+      expect(vm.$v.foo.bar.baz.str.$params.jsonType.type).to.eql('jsonType')
+    })
+
+    it('supports multiple schemas', function() {
+      var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
+        schema: {
+          'foo.bar.baz': {
+            type: 'object',
+            properties: {
+              str: {
+                type: 'string',
+                default: 'abc'
+              }
+            }
+          },
+          'a.b.c': {
+            type: 'object',
+            properties: {
+              str: {
+                type: 'string',
+                default: 'abc'
+              }
+            }
+          }
+        }
+      })
+
+      expect(vm.foo.bar.baz.str).to.eql('abc')
+      expect(vm.$v.foo.bar.baz.str.$params.jsonType.type).to.eql('jsonType')
+      expect(vm.a.b.c.str).to.eql('abc')
+      expect(vm.$v.a.b.c.str.$params.jsonType.type).to.eql('jsonType')
+    })
+
     describe('options merging', function() {
       it('allows replacing a validation rule', function() {
         var vm = new Vue({
@@ -605,13 +656,18 @@ describe('plugin', function() {
           // in json schema context the value is considered equal if seemingly same, not strict same
           vm.str = [{}, {}]
           expect(vm.$v.str.$invalid).to.eql(true)
-          vm.str = [[], []]
+          vm.str = [
+            [],
+            []
+          ]
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [null, null]
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = ['1', 1]
           expect(vm.$v.str.$invalid).to.eql(false)
-          vm.str = [1, 2, true, false, {}, [], 'str']
+          vm.str = [1, 2, true, false, {},
+            [], 'str'
+          ]
           expect(vm.$v.str.$invalid).to.eql(false)
         })
       })
