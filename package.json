@@ -10,7 +10,26 @@
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "author": "Martin Hansen",
-  "license": "ISC",
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "vuelidate",
+    "json",
+    "jsonschema",
+    "schema"
+  ],
+  "directories": {
+    "lib": "src",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mokkabonna/vue-vuelidate-jsonschema.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mokkabonna/vue-vuelidate-jsonschema/issues"
+  },
+  "homepage": "https://github.com/mokkabonna/vue-vuelidate-jsonschema#readme",
   "devDependencies": {
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
