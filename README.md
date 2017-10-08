@@ -218,6 +218,7 @@ I recommend to use [vuelidate-error-extractor](https://github.com/dobromir-hrist
 - [ ] more tests for really complex schemas
 - [ ] document and test mounting procedure (multiple schemas in one vm)
 - [ ] better validation params for array items validation (when not object)
+- [ ] document exactly what validators are used for any json schema validation property
 
 
 PRs are welcome.
