@@ -4,7 +4,8 @@
   "description": "Create validation definitions for vuelidate based on json schema",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nyc --reporter=html --reporter=text mocha test/specs",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "author": "Martin Hansen",
   "license": "ISC",
@@ -17,6 +18,7 @@
     "eslint-plugin-node": "^5.2.0",
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
+    "nyc": "^11.2.1",
     "require-uncached": "^1.0.3",
     "vue": "^2.4.4",
     "vuelidate": "^0.6.0"
