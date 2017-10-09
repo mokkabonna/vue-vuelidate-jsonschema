@@ -230,9 +230,9 @@ export default {
   },
   validations: {
     name: {
-      minLength: minLength(2), //overrides minLength 5
+      schemaMinLength: minLength(2), //overrides minLength 5
       email, // adds email validator
-      maxLength: undefined // removes maxlength validator
+      schemaMaxLength: undefined // removes maxlength validator
     }
   }
 }
