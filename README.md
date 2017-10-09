@@ -321,7 +321,7 @@ Promises and functions are supported, just define your schema like this:
 export default {
   schema: [
     function loadSchemaOnCreate() {
-      // function must return a promise
+      // functions must return a promise or a schema/config synchronously
       return fetchSchema('http://example.com/schema-3.json')
     },
     //load schemas on module require
@@ -337,7 +337,15 @@ export default {
 }
 ```
 
-Functions are called on beforeCreate hook. Where fetchSchema returns a promise that resolves to a schema or a schema config object.
+Functions are called on the beforeCreate hook. If the schema config has any promises or any function return a promise, then the property **$schema** on the vm is a promise that will be resolved when all schemas have loaded. Then **$schema** will be replaced by the actual array of schemas.
+
+You need to use a `v-if` in your view to prevent the view from failing if you try to access data or validation properties that aren't created synchronously:
+
+```html
+<form v-if="$schema && !$schema.then">
+  <input v-model.trim="name" @input="$v.name.$touch()">
+</form>
+```
 
 ### Loading related schemas
 
