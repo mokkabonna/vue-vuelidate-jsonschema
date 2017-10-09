@@ -133,7 +133,7 @@ The schema for the property and any params are passed to all the validators and 
 }
 ```
 
-### items and $each validation
+### Items and $each validation
 
 All versions of the items property is supported.
 
@@ -151,7 +151,7 @@ All versions of the items property is supported.
 
 If the numbers in the array are not minimum 3 or any non numbers are in the array then the array is invalid.
 
-#### multiple schemas
+#### Multiple schemas
 
 ```js
 {
@@ -176,7 +176,7 @@ If the items in the array are not either a number with minimum value of 3 or an 
 
 We can't expose any errors on the object itself if present, due to vuelidates limitation with the use of the $each keyword that requires all objects to be the same. Se next section.
 
-#### single schema and type object
+#### Single schema and type object
 
 ```js
 {
