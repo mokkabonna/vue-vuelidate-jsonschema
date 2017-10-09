@@ -36,7 +36,7 @@ var jsonTypes = {
 
 function getVue (rootVm) {
   if (Vue) return Vue
-  let InnerVue = rootVm.constructor
+  var InnerVue = rootVm.constructor
   /* istanbul ignore next */
   while (InnerVue.super) InnerVue = InnerVue.super
   Vue = InnerVue
@@ -382,7 +382,7 @@ function generateValidationSchema(schemas) {
 }
 
 var mixin = {
-  beforeCreate() {
+  beforeCreate: function() {
     var self = this
     if (!this.$options.schema) {
       return

@@ -1,4 +1,4 @@
-var isFunction = (val) => typeof val === 'function'
+var isFunction = require('lodash/isFunction')
 var mergeWith = require('lodash/mergeWith')
 var forEach = require('lodash/forEach')
 var isPlainObject = require('lodash/isPlainObject')
