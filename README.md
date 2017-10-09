@@ -336,8 +336,7 @@ export default {
 }
 ```
 
-Where fetchSchema returns a promise that resolves to a schema or a schema config object.
-
+Functions are called on beforeCreate hook. Where fetchSchema returns a promise that resolves to a schema or a schema config object.
 
 ### Loading related schemas
 
