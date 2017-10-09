@@ -6,6 +6,7 @@ var merge = require('lodash/merge')
 var set = require('lodash/set')
 var get = require('lodash/get')
 var defaults = require('lodash/defaults')
+var difference = require('lodash/difference')
 var isEqual = require('lodash/isEqual')
 var omit = require('lodash/omit')
 var isString = require('lodash/isString')
@@ -362,7 +363,9 @@ function generateValidationSchema(schemas) {
     }, root)
   }
 
-  return reduce(schemas, function(all, schemaConfig) {
+  var rest = difference(schemas, roots)
+
+  return reduce(rest, function(all, schemaConfig) {
     set(all, schemaConfig.mountPoint, getValidationRules(schemaConfig.schema))
     return all
   }, root)
@@ -378,14 +381,14 @@ var mixin = {
   },
   beforeCreate() {
     var self = this
-    if (!this.$options.schema) { 
-      return 
+    if (!this.$options.schema) {
+      return
     }
-    
+
     if(!installed) {
       throw new Error('vue-vuelidate-jsonschema needs to be installed even when used as a local mixin. If you don\'t want the global mixin, use it with the option installGlobalMixin: false')
     }
-    
+
     function defineReactives(parent, obj) {
       for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
@@ -403,14 +406,14 @@ var mixin = {
     }
 
     var normalized = normalizeSchemas(this.$options.schema)
-    
+
     var calledSchemas = normalized.map(function(schemaConfig) {
       if (isFunction(schemaConfig.schema)) {
         var config = cloneDeep(schemaConfig)
         config.schema = schemaConfig.schema()
         return config
       }
-      
+
       return schemaConfig
     })
 
@@ -446,13 +449,13 @@ module.exports = {
     options = defaults(options, {
       installGlobalMixin: true
     })
-    
+
     installVue.config.optionMergeStrategies.validations = mergeStrategy
-    
+
     if(options.installGlobalMixin) {
       installVue.mixin(mixin)
     }
-    
+
     installed = true
   }
 }
