@@ -276,11 +276,16 @@ This exposes prop1 at **vm.deep.nested.structure.prop1** and prop2 at **vm.other
 
 ## Loading async schemas
 
-Promises are supported, just define your schema like this:
+Promises and functions are supported, just define your schema like this:
 
 ```js
 export default {
   schema: [
+    function loadSchemaOnCreate() {
+      // function must return a promise
+      return fetchSchema('http://example.com/schema-3.json')
+    },
+    //load schemas on module require
     fetchSchema('http://example.com/schema-1.json'), // will get root mount point
     fetchSchema('http://example.com/schema-2.json').then(function(schema) {
       //return a schema config object
@@ -293,7 +298,8 @@ export default {
 }
 ```
 
-Where fetchSchema returns a promise that resolves to a schema or a schema config object. You can also use this to
+Where fetchSchema returns a promise that resolves to a schema or a schema config object.
+
 
 ### Loading related schemas
 

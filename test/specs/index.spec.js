@@ -84,6 +84,58 @@ describe('plugin', function() {
         expect(vm.$v.prop2.$invalid).to.eql(false)
       })
     })
+    
+    it('support calling functions', function() {
+      function fetchSchema() {
+        return new Promise(function(resolve) {
+          resolve({
+            type: 'object',
+            properties: {
+              prop1: {
+                type: 'string',
+                minLength: 3,
+                default: '123'
+              }
+            }
+          })
+        })
+      }
+
+      var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
+        schema: fetchSchema
+      })
+
+      return vm.$schema.then(function() {
+        expect(vm.prop1).to.eql('123')
+      })
+    })
+    
+    it('support calling multiple functions', function() {
+      function fetchSchema() {
+        return new Promise(function(resolve) {
+          resolve({
+            type: 'object',
+            properties: {
+              prop1: {
+                type: 'string',
+                minLength: 3,
+                default: '123'
+              }
+            }
+          })
+        })
+      }
+
+      var vm = new Vue({
+        mixins: [Vuelidate.validationMixin],
+        schema: [fetchSchema, fetchSchema]
+      })
+
+      return vm.$schema.then(function() {
+        expect(vm.prop1).to.eql('123')
+      })
+    })
 
     it('exposes json property schema as params', function() {
       var propSchema = {

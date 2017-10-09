@@ -9,6 +9,7 @@ var isEqual = require('lodash/isEqual')
 var omit = require('lodash/omit')
 var isString = require('lodash/isString')
 var isPlainObject = require('lodash/isPlainObject')
+var cloneDeep = require('lodash/cloneDeep')
 var isFunction = require('lodash/isFunction')
 var uniqBy = require('lodash/uniqBy')
 var isBoolean = require('lodash/isBoolean')
@@ -398,13 +399,23 @@ module.exports = {
         var self = this
         if (!this.$options.schema) { return }
         var normalized = normalizeSchemas(this.$options.schema)
+        
+        var calledSchemas = normalized.map(function(schemaConfig) {
+          if (isFunction(schemaConfig.schema)) {
+            var config = cloneDeep(schemaConfig)
+            config.schema = schemaConfig.schema()
+            return config
+          }
+          
+          return schemaConfig
+        })
 
-        var hasPromise = normalized.some(function(schemaConfig) {
+        var hasPromise = calledSchemas.some(function(schemaConfig) {
           return isFunction(schemaConfig.schema.then)
         })
 
         if (hasPromise) {
-          var allSchemaPromise = Promise.all(normalized.map(function(schemaConfig) {
+          var allSchemaPromise = Promise.all(calledSchemas.map(function(schemaConfig) {
             return schemaConfig.schema.then(function(schema) {
               var newConfig = omit(schemaConfig, 'schema')
               newConfig.schema = schema
