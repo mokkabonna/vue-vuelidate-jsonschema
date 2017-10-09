@@ -5,6 +5,7 @@ var every = require('lodash/every')
 var merge = require('lodash/merge')
 var set = require('lodash/set')
 var get = require('lodash/get')
+var defaults = require('lodash/defaults')
 var isEqual = require('lodash/isEqual')
 var omit = require('lodash/omit')
 var isString = require('lodash/isString')
@@ -19,6 +20,8 @@ var isInteger = require('lodash/isInteger')
 var validators = require('vuelidate/lib/validators')
 var vuelidate = require('vuelidate')
 
+var installed = false
+var Vue
 var jsonTypes = {
   string: isString,
   object: isPlainObject,
@@ -365,10 +368,24 @@ function generateValidationSchema(schemas) {
   }, root)
 }
 
-module.exports = {
-  install: function(Vue, options) {
-    options = options || {}
-
+var mixin = {
+  validations() {
+    if (this.$schema && !isFunction(this.$schema.then)) {
+      return generateValidationSchema(this.$schema)
+    } else {
+      return {}
+    }
+  },
+  beforeCreate() {
+    var self = this
+    if (!this.$options.schema) { 
+      return 
+    }
+    
+    if(!installed) {
+      throw new Error('vue-vuelidate-jsonschema needs to be installed even when used as a local mixin. If you don\'t want the global mixin, use it with the option installGlobalMixin: false')
+    }
+    
     function defineReactives(parent, obj) {
       for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
@@ -380,59 +397,62 @@ module.exports = {
       }
     }
 
-    Vue.config.optionMergeStrategies.validations = mergeStrategy
-
     function generateDataStructure(self) {
       var dataStructure = createDataProperties(self.$schema)
       defineReactives(self, dataStructure)
     }
 
-    Vue.mixin({
-      validations() {
-        if (this.$schema) {
-          return generateValidationSchema(this.$schema)
-        } else {
-          return {}
-        }
-      },
-      beforeCreate() {
-        var self = this
-        if (!this.$options.schema) { return }
-        var normalized = normalizeSchemas(this.$options.schema)
-        
-        var calledSchemas = normalized.map(function(schemaConfig) {
-          if (isFunction(schemaConfig.schema)) {
-            var config = cloneDeep(schemaConfig)
-            config.schema = schemaConfig.schema()
-            return config
-          }
-          
-          return schemaConfig
-        })
-
-        var hasPromise = calledSchemas.some(function(schemaConfig) {
-          return isFunction(schemaConfig.schema.then)
-        })
-
-        if (hasPromise) {
-          var allSchemaPromise = Promise.all(calledSchemas.map(function(schemaConfig) {
-            return schemaConfig.schema.then(function(schema) {
-              var newConfig = omit(schemaConfig, 'schema')
-              newConfig.schema = schema
-              return newConfig
-            })
-          })).then(function(schemaConfigs) {
-            self.$schema = schemaConfigs
-            generateDataStructure(self)
-          })
-
-          Vue.util.defineReactive(this, '$schema', allSchemaPromise)
-        } else {
-          // rewrite schemas normalized
-          Vue.util.defineReactive(this, '$schema', normalized)
-          generateDataStructure(this)
-        }
+    var normalized = normalizeSchemas(this.$options.schema)
+    
+    var calledSchemas = normalized.map(function(schemaConfig) {
+      if (isFunction(schemaConfig.schema)) {
+        var config = cloneDeep(schemaConfig)
+        config.schema = schemaConfig.schema()
+        return config
       }
+      
+      return schemaConfig
     })
+
+    var hasPromise = calledSchemas.some(function(schemaConfig) {
+      return isFunction(schemaConfig.schema.then)
+    })
+
+    if (hasPromise) {
+      var allSchemaPromise = Promise.all(calledSchemas.map(function(schemaConfig) {
+        return schemaConfig.schema.then(function(schema) {
+          var newConfig = omit(schemaConfig, 'schema')
+          newConfig.schema = schema
+          return newConfig
+        })
+      })).then(function(schemaConfigs) {
+        self.$schema = schemaConfigs
+        generateDataStructure(self)
+      })
+
+      Vue.util.defineReactive(this, '$schema', allSchemaPromise)
+    } else {
+      // rewrite schemas normalized
+      Vue.util.defineReactive(this, '$schema', normalized)
+      generateDataStructure(this)
+    }
+  }
+}
+
+module.exports = {
+  mixin: mixin,
+  install: function(installVue, options) {
+    Vue = installVue
+    options = defaults(options, {
+      installGlobalMixin: true
+    })
+    
+    installVue.config.optionMergeStrategies.validations = mergeStrategy
+    
+    if(options.installGlobalMixin) {
+      installVue.mixin(mixin)
+    }
+    
+    installed = true
   }
 }

@@ -7,8 +7,45 @@ var Vuelidate = requireUncached('vuelidate')
 var validators = requireUncached('vuelidate/lib/validators')
 
 describe('plugin', function() {
-  it('installs ok', function() {
-    Vue.use(plugin)
+  describe('mixin', function() {
+    it('exposes mixin', function () {
+      expect(plugin.mixin).to.have.keys(['beforeCreate', 'validations'])
+    })
+    
+    it('throws if not installed first', function() {
+      function createVm() {
+        var vm = new Vue({
+          mixins: [Vuelidate.validationMixin, plugin.mixin],
+          schema: {
+            type: 'object'
+          }
+        })
+      }
+      
+      expect(createVm).to.throw(/installGlobalMixin/)
+    })
+    
+    it('works as a local mixin', function() {
+      var propSchema = {
+        type: 'integer',
+        title: 'Age',
+        description: 'The age of the student',
+        minimum: 3
+      }
+      
+      Vue.use(plugin)
+      var vm = new Vue({
+        mixins: [Vuelidate.validationMixin, plugin.mixin],
+        schema: {
+          type: 'object',
+          properties: {
+            age: propSchema
+          }
+        }
+      })
+
+      expect(vm.$v.age.$params.schemaMinimum.schema).to.eql(propSchema)
+    })
   })
 
   describe('when installed', function() {
@@ -136,7 +173,7 @@ describe('plugin', function() {
         expect(vm.prop1).to.eql('123')
       })
     })
-
+    
     it('exposes json property schema as params', function() {
       var propSchema = {
         type: 'integer',
