@@ -147,7 +147,11 @@ describe('plugin', function() {
     })
 
     it('support calling functions', function() {
+      Vue.use(Vuelidate.Vuelidate)
+      var callCount = 0
+
       function fetchSchema() {
+        callCount = callCount + 1
         return new Promise(function(resolve) {
           resolve({
             type: 'object',
@@ -163,12 +167,12 @@ describe('plugin', function() {
       }
 
       var vm = new Vue({
-        mixins: [Vuelidate.validationMixin],
         schema: fetchSchema
       })
 
       return vm.$schema.then(function() {
         expect(vm.prop1).to.eql('123')
+        expect(callCount).to.eql(1)
       })
     })
 
