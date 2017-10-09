@@ -4,10 +4,10 @@
 
 Use the json schemas you already have for validating your api input to generate validation rules for vuelidate. And use default values to generate the data attributes.
 
-The goal is that if your vuelidate validation is valid then you will also pass validation against the json schema. So you can with confidence serialize your model to json and the server will accept it if it validates agains the same schema.
+The goal is that if your vuelidate validation is valid then you will also pass validation against the json schema. So you can with confidence serialize your model to json and the server will accept it if it validates against the same schema.
 
 ```bash
-npm install vue-vuelidate-jsonschema
+npm install vue-vuelidate-jsonschema --save
 ```
 
 ## Install plugin globally
@@ -33,7 +33,7 @@ You can use the local mixin like this:
 import VueVuelidateJsonschema from 'vue-vuelidate-jsonschema'
 
 export default {
-  mixins: [VueVuelidateJsonschema.mixin] 
+  mixins: [VueVuelidateJsonschema.mixin]
 }
 ```
 
@@ -111,11 +111,33 @@ export default {
 
 The plan is to support all rules. PR's are welcome. When matching validation rules are present in vuelidate, those are used. For other validations this library have quite a few of its own.
 
+### Property schema exposure
+
+The schema for the property and any params are passed to all the validators and available like this:
+
+
+```js
+// $v.name.$params.schemaMinLength
+{
+  type: 'schemaMinLength',
+  min: 3,
+  schema: {
+    type: 'string',
+    minLength: 3,
+    maxLength: 30,
+    title: 'Name',
+    description: 'The name of the student.'
+    default: 'John'
+    ...
+  }
+}
+```
+
 ### items and $each validation
 
 All versions of the items property is supported.
 
-#### single schema and non object
+#### Single schema and non object
 
 ```js
 {
@@ -337,7 +359,7 @@ I recommend to use [vuelidate-error-extractor](https://github.com/dobromir-hrist
 - [ ] possibly support and test circular $refs
 - [ ] better validation params for array items validation (when not object)
 - [ ] document exactly what validators are used for any json schema validation property
-- [ ] pass title, description etc to the validator as params (possibly whole property schema)
+- [x] pass title, description etc to the validator as params (possibly whole property schema)
 
 
 PRs are welcome.
