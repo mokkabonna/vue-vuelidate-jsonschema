@@ -1,6 +1,6 @@
 {
   "name": "vue-vuelidate-jsonschema",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Create validation definitions for vuelidate based on json schema",
   "main": "src/index.js",
   "scripts": {
