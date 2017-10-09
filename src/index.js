@@ -5,7 +5,6 @@ var every = require('lodash/every')
 var merge = require('lodash/merge')
 var set = require('lodash/set')
 var get = require('lodash/get')
-var defaults = require('lodash/defaults')
 var difference = require('lodash/difference')
 var isEqual = require('lodash/isEqual')
 var omit = require('lodash/omit')
@@ -177,9 +176,7 @@ function uniqueValidator(propertySchema) {
 }
 
 function itemsValidator(arraySchema) {
-  var normalizedSchemas = Array.isArray(arraySchema.items) ?
-    arraySchema.items :
-    [arraySchema.items]
+  var normalizedSchemas = Array.isArray(arraySchema.items) ? arraySchema.items : [arraySchema.items]
 
   return vuelidate.withParams({
     type: 'schemaItems',
@@ -227,24 +224,31 @@ function itemsValidator(arraySchema) {
   })
 }
 
-function getDefaultValue(schema) {
+function getDefaultValue(schema, isRequired) {
   if (schema.hasOwnProperty('default')) {
     return schema.default
+  } else if (schema.type === 'integer' || schema.type === 'number') {
+    return isRequired ? 0 : undefined
   } else if (schema.type === 'string') {
-    return ''
+    return isRequired ? '' : undefined
+  } else if (schema.type === 'boolean') {
+    return isRequired ? false : undefined
   } else if (schema.type === 'object') {
-    return {}
+    return isRequired ? {} : undefined
   } else if (schema.type === 'array') {
-    return []
+    return isRequired ? [] : undefined
+  } else if (schema.type === 'null') {
+    return isRequired ? null : undefined
   } else {
-    return null
+    return undefined
   }
 }
 
 function setProperties(base, schema) {
   Object.keys(schema.properties).forEach(function(key) {
     var innerSchema = schema.properties[key]
-    base[key] = getDefaultValue(innerSchema)
+    var isRequired = Array.isArray(schema.required) && schema.required.indexOf(key) !== -1
+    base[key] = getDefaultValue(innerSchema, isRequired)
     if (innerSchema.type === 'object' && innerSchema.properties) {
       setProperties(base[key], innerSchema)
     }

@@ -45,8 +45,7 @@ export default {
     properties: {
       name: {
         type: 'string',
-        pattern: '^\\w+\s\\w+$',
-        default: 'Jack'
+        pattern: '^\\w+\s\\w+$'
       },
       username: {
         type: 'string',
@@ -73,7 +72,7 @@ import {pattern} from 'vue-vuelidate-jsonschema'
 export default {
   data() {
     return {
-      name: 'Jack',
+      name: undefined,
       username: '',
       age: 20
     }
@@ -93,6 +92,9 @@ export default {
 }
 ```
 
+## Default data values
+
+If the property have a default value, that is **always** used. If it does not and the property is not required the value is set to `undefined`. If the property is required then the value is set to string: `''`, boolean: `false`, object: `{}`, array: `[]`, null: `null`, and for both number and integer: `0`
 
 ## Supported json schema validation rules
 
