@@ -58,7 +58,8 @@ export default {
         minimum: 18,
         maximum: 30
       }
-    }
+    },
+    required: ['username']
   }
 }
 ```
@@ -234,8 +235,6 @@ export default {
   }
 }
 ```
-
-Keep in mind that for instance json schema minLength validator adds both minLength and required validator. So you need to remove both if that is what you want.
 
 This merging of validation options works by adding a custom merge strategy for vue options that merges them correctly.
 
