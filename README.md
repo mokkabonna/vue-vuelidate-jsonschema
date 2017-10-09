@@ -194,7 +194,7 @@ We can't expose any errors on the object itself if present, due to vuelidates li
 }
 ```
 
-Now we can utilize vuelidates $each property so that you can get proper error messages for properties on the objects in the array.
+Now we can utilize vuelidates **$each** property so that you can get proper error messages for properties on the objects in the array.
 
 
 ### Required property in json schema context
