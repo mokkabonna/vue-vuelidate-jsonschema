@@ -295,7 +295,7 @@ export default {
       }
     }
   }, {
-    mountPoint: 'other.deep.stucture',
+    mountPoint: 'other.deep.structure',
     schema: {
       type: 'object',
       properties: {
@@ -308,7 +308,7 @@ export default {
 }
 ```
 
-This exposes prop1 at **vm.deep.nested.structure.prop1** and prop2 at **vm.other.deep.stucture.prop2**
+This exposes prop1 at **vm.deep.nested.structure.prop1** and prop2 at **vm.other.deep.structure.prop2**
 
 
 ## Loading async schemas
