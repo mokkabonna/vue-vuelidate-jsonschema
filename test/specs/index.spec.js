@@ -253,6 +253,8 @@ describe('plugin', function() {
       expect(vm.prop5).to.eql(null)
     })
 
+    it('takes required property into consideration when creating default values')
+
     it('supports default value from schema', function() {
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
