@@ -1,10 +1,11 @@
 var chai = require('chai')
 var requireUncached = require('require-uncached')
-var expect = chai.expect
 var plugin = requireUncached('../../src')
 var Vue = requireUncached('vue')
 var Vuelidate = requireUncached('vuelidate')
 var validators = requireUncached('vuelidate/lib/validators')
+
+var expect = chai.expect
 
 describe('plugin', function() {
   it('installs globally', function() {

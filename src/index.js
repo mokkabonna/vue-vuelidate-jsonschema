@@ -21,7 +21,6 @@ var isInteger = require('lodash/isInteger')
 var validators = require('vuelidate/lib/validators')
 var vuelidate = require('vuelidate')
 
-var installed = false
 var Vue
 var jsonTypes = {
   string: isString,
@@ -33,8 +32,7 @@ var jsonTypes = {
   integer: isInteger
 }
 
-
-function getVue (rootVm) {
+function getVue(rootVm) {
   if (Vue) return Vue
   var InnerVue = rootVm.constructor
   /* istanbul ignore next */
@@ -168,16 +166,20 @@ function uniqueValidator(propertySchema) {
     schema: propertySchema
   }, function(val) {
     // TODO is array check here ok?
-    if (!Array.isArray(val)) { return true }
-    if (val.length < 2) { return true }
+    if (!Array.isArray(val)) {
+      return true
+    }
+    if (val.length < 2) {
+      return true
+    }
     return val.length === uniqBy(val, getUniqueness).length
   })
 }
 
 function itemsValidator(arraySchema) {
-  var normalizedSchemas = Array.isArray(arraySchema.items)
-    ? arraySchema.items
-    : [arraySchema.items]
+  var normalizedSchemas = Array.isArray(arraySchema.items) ?
+    arraySchema.items :
+    [arraySchema.items]
 
   return vuelidate.withParams({
     type: 'schemaItems',
@@ -198,7 +200,9 @@ function itemsValidator(arraySchema) {
     function validateGroup(item, validator, key) {
       if (isPlainObject(validator)) {
         return every(validator, function(innerValidator, innerKey) {
-          if (item[key] === undefined) { return true }
+          if (item[key] === undefined) {
+            return true
+          }
           return validateGroup(item[key], innerValidator, innerKey)
         })
       } else {
@@ -266,16 +270,17 @@ function normalizeSchemas(schemaConfig) {
       if (config.mountPoint) {
         return config
       } else {
-        return {mountPoint: '.', schema: config}
+        return {
+          mountPoint: '.',
+          schema: config
+        }
       }
     })
   } else {
-    return [
-      {
-        mountPoint: '.',
-        schema: schemaConfig
-      }
-    ]
+    return [{
+      mountPoint: '.',
+      schema: schemaConfig
+    }]
   }
 }
 
@@ -362,6 +367,15 @@ function getValidationRules(schema) {
 function generateValidationSchema(schemas) {
   var root = {}
 
+  schemas.forEach(function(schemaConfig) {
+    if (schemaConfig.schema.type !== 'object') {
+      throw new Error('Schema with id ' + schemaConfig.schema.id + ' is not a schema of type object. This is currently not supported.')
+    }
+    if (!isPlainObject(schemaConfig.schema.properties)) {
+      throw new Error('Schema with id ' + schemaConfig.schema.id + ' does not have a properties object.')
+    }
+  })
+
   var roots = schemas.filter(function(schemaConfig) {
     return schemaConfig.mountPoint === '.'
   })
@@ -389,8 +403,8 @@ var mixin = {
     }
 
     Vue = getVue(this)
-    
-    this.$options.validations = mergeStrategy(function () {
+
+    this.$options.validations = mergeStrategy(function() {
       if (this.$schema && !isFunction(this.$schema.then)) {
         return generateValidationSchema(this.$schema)
       } else {
