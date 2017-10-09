@@ -207,7 +207,7 @@ Using uniqueItems in a json schema context means that the values are equal in te
 
 ## Between validator
 
-If both the minimum and maximum properties are present the between validator in vuelidate is used.
+If both the minimum and maximum properties are present a between validator is used.
 
 ## Override or extend validation
 
