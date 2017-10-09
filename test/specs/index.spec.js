@@ -844,7 +844,7 @@ describe('plugin', function() {
           vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
-          expect(vm.$v.str.$invalid).to.eql(true)
+          expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = null
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = '3abc'

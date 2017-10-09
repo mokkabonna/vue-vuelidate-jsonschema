@@ -96,7 +96,8 @@ function minValidator(propertySchema, min) {
     min: min,
     schema: propertySchema
   }, function(val) {
-    return !noParamsRequired(val) || val >= min
+    if (!isFinite(val)) return true
+    return val >= min
   })
 }
 
@@ -107,7 +108,8 @@ function betweenValidator(propertySchema, min, max) {
     max: max,
     schema: propertySchema
   }, function(val) {
-    return !noParamsRequired(val) || (val >= min && val <= max)
+    if (!isFinite(val)) return true
+    return val >= min && val <= max
   })
 }
 
@@ -117,7 +119,8 @@ function maxValidator(propertySchema, max) {
     max: max,
     schema: propertySchema
   }, function(val) {
-    return !noParamsRequired(val) || val <= max
+    if (!isFinite(val)) return true
+    return val <= max
   })
 }
 
@@ -127,7 +130,8 @@ function patternValidator(propertySchema, pattern) {
     pattern: pattern,
     schema: propertySchema
   }, function(val) {
-    return isString(val) && pattern.test(val)
+    if (!isString(val)) return true
+    return pattern.test(val)
   })
 }
 
@@ -164,7 +168,6 @@ function uniqueValidator(propertySchema) {
     type: 'schemaUnique',
     schema: propertySchema
   }, function(val) {
-    // TODO is array check here ok?
     if (!Array.isArray(val)) {
       return true
     }
@@ -182,10 +185,6 @@ function itemsValidator(arraySchema) {
     type: 'schemaItems',
     schema: arraySchema
   }, function(val) {
-    if (!noParamsRequired(val)) {
-      return true
-    }
-
     if (!Array.isArray(val) || val.length === 0) {
       return true
     }
