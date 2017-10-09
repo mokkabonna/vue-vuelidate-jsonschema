@@ -10,20 +10,19 @@ The goal is that if your vuelidate validation is valid then you will also pass v
 npm install vue-vuelidate-jsonschema
 ```
 
-## Install plugin
+## Install plugin globally
 
-**NOTE** Due to a bug in vuelidate or Vue, the usage of this module as a global mixin does currently not work.
-See https://github.com/monterail/vuelidate/issues/202
+NOTE: if using this plugin as a global mixin, make sure to use it **before** you register Vuelidate.
 
-For now use it as a local mixin, see below.
+If no schema property is present neither this plugin nor vuelidate will be instantiated. Unless you have a validations object/function on your vm.
 
 ```js
 import Vue from 'vue'
 import VueVuelidateJsonschema from 'vue-vuelidate-jsonschema'
 import Vuelidate from 'vuelidate'
 
-Vue.use(Vuelidate)
 Vue.use(VueVuelidateJsonschema)
+Vue.use(Vuelidate)
 ```
 
 ## Local mixin
@@ -31,16 +30,7 @@ Vue.use(VueVuelidateJsonschema)
 You can use the local mixin like this:
 
 ```js
-import Vue from 'vue'
 import VueVuelidateJsonschema from 'vue-vuelidate-jsonschema'
-import Vuelidate from 'vuelidate'
-
-Vue.use(Vuelidate)
-// you need to install in anyway, since it need to define a vue options
-// merge strategy
-Vue.use(VueVuelidateJsonschema, {
-  installGlobalMixin: false // avoid installing the global mixin
-})
 
 export default {
   mixins: [VueVuelidateJsonschema.mixin] 

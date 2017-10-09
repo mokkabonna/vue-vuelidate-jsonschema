@@ -33,6 +33,16 @@ var jsonTypes = {
   integer: isInteger
 }
 
+
+function getVue (rootVm) {
+  if (Vue) return Vue
+  let InnerVue = rootVm.constructor
+  /* istanbul ignore next */
+  while (InnerVue.super) InnerVue = InnerVue.super
+  Vue = InnerVue
+  return InnerVue
+}
+
 function noParamsRequired(val) {
   return val !== undefined
 }
@@ -372,22 +382,21 @@ function generateValidationSchema(schemas) {
 }
 
 var mixin = {
-  validations() {
-    if (this.$schema && !isFunction(this.$schema.then)) {
-      return generateValidationSchema(this.$schema)
-    } else {
-      return {}
-    }
-  },
   beforeCreate() {
     var self = this
     if (!this.$options.schema) {
       return
     }
 
-    if(!installed) {
-      throw new Error('vue-vuelidate-jsonschema needs to be installed even when used as a local mixin. If you don\'t want the global mixin, use it with the option installGlobalMixin: false')
-    }
+    Vue = getVue(this)
+    
+    this.$options.validations = mergeStrategy(function () {
+      if (this.$schema && !isFunction(this.$schema.then)) {
+        return generateValidationSchema(this.$schema)
+      } else {
+        return {}
+      }
+    }, this.$options.validations)
 
     function defineReactives(parent, obj) {
       for (var prop in obj) {
@@ -444,18 +453,7 @@ var mixin = {
 
 module.exports = {
   mixin: mixin,
-  install: function(installVue, options) {
-    Vue = installVue
-    options = defaults(options, {
-      installGlobalMixin: true
-    })
-
-    installVue.config.optionMergeStrategies.validations = mergeStrategy
-
-    if(options.installGlobalMixin) {
-      installVue.mixin(mixin)
-    }
-
-    installed = true
+  install: function(Vue, options) {
+    Vue.mixin(mixin)
   }
 }

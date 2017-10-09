@@ -7,24 +7,49 @@ var Vuelidate = requireUncached('vuelidate')
 var validators = requireUncached('vuelidate/lib/validators')
 
 describe('plugin', function() {
+  it('installs globally', function() {
+    Vue.use(plugin)
+    Vue.use(Vuelidate.Vuelidate)
+
+    var propSchema = {
+      type: 'integer',
+      title: 'Age',
+      description: 'The age of the student',
+      minimum: 3
+    }
+
+    var vm = new Vue({
+      schema: {
+        type: 'object',
+        properties: {
+          age: propSchema
+        }
+      }
+    })
+
+    expect(vm.$v.age.$params.schemaMinimum.schema).to.eql(propSchema)
+    expect(vm._vuelidate).not.to.eql(undefined)
+  })
+
+  it('does not create vuelidate instance if no schema', function() {
+    Vue.use(plugin)
+    Vue.use(Vuelidate)
+
+    var vm = new Vue({
+      data() {
+        return {}
+      }
+    })
+
+    expect(vm.$v).to.eql(undefined)
+    expect(vm._vuelidate).to.eql(undefined)
+  })
+
   describe('mixin', function() {
     it('exposes mixin', function () {
-      expect(plugin.mixin).to.have.keys(['beforeCreate', 'validations'])
+      expect(plugin.mixin).to.have.keys(['beforeCreate'])
     })
-    
-    it('throws if not installed first', function() {
-      function createVm() {
-        var vm = new Vue({
-          mixins: [Vuelidate.validationMixin, plugin.mixin],
-          schema: {
-            type: 'object'
-          }
-        })
-      }
-      
-      expect(createVm).to.throw(/installGlobalMixin/)
-    })
-    
+
     it('works as a local mixin', function() {
       var propSchema = {
         type: 'integer',
@@ -32,8 +57,7 @@ describe('plugin', function() {
         description: 'The age of the student',
         minimum: 3
       }
-      
-      Vue.use(plugin)
+
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin, plugin.mixin],
         schema: {
@@ -121,7 +145,7 @@ describe('plugin', function() {
         expect(vm.$v.prop2.$invalid).to.eql(false)
       })
     })
-    
+
     it('support calling functions', function() {
       function fetchSchema() {
         return new Promise(function(resolve) {
@@ -147,7 +171,7 @@ describe('plugin', function() {
         expect(vm.prop1).to.eql('123')
       })
     })
-    
+
     it('support calling multiple functions', function() {
       function fetchSchema() {
         return new Promise(function(resolve) {
@@ -173,7 +197,7 @@ describe('plugin', function() {
         expect(vm.prop1).to.eql('123')
       })
     })
-    
+
     it('exposes json property schema as params', function() {
       var propSchema = {
         type: 'integer',
