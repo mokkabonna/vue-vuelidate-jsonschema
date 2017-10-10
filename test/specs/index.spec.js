@@ -465,13 +465,13 @@ describe('plugin', function() {
             properties: {
               str: {
                 type: 'string',
-                minLength: 3
+                minLength: 7
               }
             }
           },
           validations: {
             str: {
-              minLength: validators.minLength(5)
+              schemaMinLength: validators.minLength(5)
             }
           }
         })
