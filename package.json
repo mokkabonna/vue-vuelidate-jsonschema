@@ -4,7 +4,7 @@
   "description": "Create validation definitions for vuelidate based on json schema",
   "main": "src/index.js",
   "scripts": {
-    "eslint": "eslint lib test",
+    "eslint": "eslint src test",
     "test": "npm run eslint && nyc --reporter=html --reporter=text mocha test/specs",
     "develop": "mocha test/specs --watch",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
