@@ -405,7 +405,7 @@ var mixin = {
       return
     }
 
-    Vue = getVue(this)
+    var Vue = getVue(this)
 
     this.$options.validations = mergeStrategy(function() {
       if (this.$schema && !isFunction(this.$schema.then)) {
