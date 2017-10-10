@@ -136,6 +136,8 @@ The schema for the property and any params are passed to all the validators and 
 }
 ```
 
+This can be used to generate validation messages.
+
 ### Items and $each validation
 
 All versions of the items property is supported.
@@ -202,7 +204,7 @@ Now we can utilize vuelidates **$each** property so that you can get proper erro
 
 ### Required property in json schema context
 
-The required property on in json schema only means that the property should be present. Meaning any value that matches the type or types. So adding the property to the required array does not apply the required validator in vuelidate. It adds a custom validator that only checks if the value is not undefined. A type validator is added that kicks in if the value is not undefined.
+The required property in json schema only means that the property should be present. Meaning any value that matches the type or types. So adding the property to the required array does not apply the required validator in vuelidate. It adds a custom validator that only checks if the value is not undefined. A type validator is added that kicks in if the value is not undefined.
 
 ### uniqueItems
 
@@ -237,8 +239,6 @@ export default {
   }
 }
 ```
-
-This merging of validation options works by adding a custom merge strategy for vue options that merges them correctly.
 
 This works also if your validations property is a function.
 
@@ -355,6 +355,17 @@ If one of your schemas contain a $ref property you can then resolve those manual
 ## vuelidate error extractor
 
 I recommend to use [vuelidate-error-extractor](https://github.com/dobromir-hristov/vuelidate-error-extractor) to display error messages. This takes the pain out of the manual labor of writing validation messages for each property and rule.
+
+
+```js
+Vue.use(VuelidateErrorExtractor, {
+  messages: {
+    schemaRequired: 'The {attribute} field cannot be undefined.',
+    schemaMinLength: '{schema.title} must have minimum {min} characters.'
+    ...
+  }
+})
+```
 
 ## Roadmap
 
