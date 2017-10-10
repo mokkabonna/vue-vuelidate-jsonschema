@@ -102,15 +102,15 @@ If the property have a default value, that is **always** used. If it does not an
 - required => schemaRequired
 - minLength => schemaMinLength
 - maxLength => schemaMaxLength
-- minItems => schemaMinItems
-- maxItems => schemaMaxItems
+- minItems => schemaMinItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
+- maxItems => schemaMaxItems (note that the name of the validator is schemaMaxItems, but the type of the validator itself is schemaMaxLength)
 - minimum => schemaMinimum
 - maximum => schemaMaximum
 - pattern => schemaPattern
-- enum => schemaOneOf
-- const => schemaEqual
+- enum => schemaEnum
+- const => schemaConst
 - items => schemaItems, if items is a schema of type object, the $each property is also used
-- uniqueItems => schemaUnique
+- uniqueItems => schemaUniqueItems
 
 The plan is to support all rules. PR's are welcome. When matching validation rules are present in vuelidate, those are used. For other validations this library have quite a few of its own.
 

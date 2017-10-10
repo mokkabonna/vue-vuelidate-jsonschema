@@ -867,7 +867,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaOneOf.type).to.eql('schemaOneOf')
+          expect(vm.$v.str.$params.schemaEnum.type).to.eql('schemaEnum')
           vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
@@ -898,7 +898,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaEqual.type).to.eql('schemaEqual')
+          expect(vm.$v.str.$params.schemaConst.type).to.eql('schemaConst')
           vm.str = ''
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = undefined
@@ -927,7 +927,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaUnique.type).to.eql('schemaUnique')
+          expect(vm.$v.str.$params.schemaUniqueItems.type).to.eql('schemaUniqueItems')
           vm.str = []
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = undefined

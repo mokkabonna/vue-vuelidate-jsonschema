@@ -137,7 +137,7 @@ function patternValidator(propertySchema, pattern) {
 
 function oneOfValidator(propertySchema, choices) {
   return vuelidate.withParams({
-    type: 'schemaOneOf',
+    type: 'schemaEnum',
     choices: choices,
     schema: propertySchema
   }, function(val) {
@@ -147,7 +147,7 @@ function oneOfValidator(propertySchema, choices) {
 
 function equalValidator(propertySchema, equal) {
   return vuelidate.withParams({
-    type: 'schemaEqual',
+    type: 'schemaConst',
     equal: equal,
     schema: propertySchema
   }, function(val) {
@@ -165,7 +165,7 @@ function getUniqueness(item) {
 
 function uniqueValidator(propertySchema) {
   return vuelidate.withParams({
-    type: 'schemaUnique',
+    type: 'schemaUniqueItems',
     schema: propertySchema
   }, function(val) {
     if (!Array.isArray(val)) {
@@ -337,15 +337,15 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
   }
 
   if (propertySchema.hasOwnProperty('enum')) {
-    validationObj.schemaOneOf = oneOfValidator(propertySchema, propertySchema.enum)
+    validationObj.schemaEnum = oneOfValidator(propertySchema, propertySchema.enum)
   }
 
   if (propertySchema.hasOwnProperty('const')) {
-    validationObj.schemaEqual = equalValidator(propertySchema, propertySchema.const)
+    validationObj.schemaConst = equalValidator(propertySchema, propertySchema.const)
   }
 
   if (propertySchema.hasOwnProperty('uniqueItems')) {
-    validationObj.schemaUnique = uniqueValidator(propertySchema)
+    validationObj.schemaUniqueItems = uniqueValidator(propertySchema)
   }
 
   if (propertySchema.hasOwnProperty('items') && propertySchema.type === 'array' && propertySchema.items.type === 'object') {
