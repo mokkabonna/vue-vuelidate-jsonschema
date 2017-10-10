@@ -1,15 +1,25 @@
 var vuelidate = require('vuelidate')
 var isPlainObject = require('lodash/isPlainObject')
 var every = require('lodash/every')
+var isFunction = require('lodash/isFunction')
 
 module.exports = function itemsValidator(arraySchema, getPropertyValidationRules) {
-  var normalizedSchemas = Array.isArray(arraySchema.items) ? arraySchema.items : [arraySchema.items]
+  var normalizedSchemas
+  var originallySingleSchema
+
+  if (Array.isArray(arraySchema.items)) {
+    originallySingleSchema = false
+    normalizedSchemas = arraySchema.items
+  } else {
+    originallySingleSchema = true
+    normalizedSchemas = [arraySchema.items]
+  }
 
   return vuelidate.withParams({
     type: 'schemaItems',
     schema: arraySchema
-  }, function(val) {
-    if (!Array.isArray(val) || val.length === 0) {
+  }, function(values) {
+    if (!Array.isArray(values) || values.length === 0) {
       return true
     }
 
@@ -20,9 +30,7 @@ module.exports = function itemsValidator(arraySchema, getPropertyValidationRules
     function validateGroup(item, validator, key) {
       if (isPlainObject(validator)) {
         return every(validator, function(innerValidator, innerKey) {
-          if (item[key] === undefined) {
-            return true
-          }
+          if (item === undefined) return true
           return validateGroup(item[key], innerValidator, innerKey)
         })
       } else {
@@ -38,11 +46,21 @@ module.exports = function itemsValidator(arraySchema, getPropertyValidationRules
       }
     })
 
-    return val.every(function(item) {
-      // Only one of the supplied schemas has to match
-      return validationForGroups.some(function(validationGroup) {
-        return validationGroup(item)
-      })
+    return values.every(function(value, i) {
+      var validationGroup
+      if (originallySingleSchema) {
+        // use first schema always if originally one schema object
+        // must do it this way because of normalization to an array
+        validationGroup = validationForGroups[0]
+      } else {
+        validationGroup = validationForGroups[i]
+      }
+
+      if (isFunction(validationGroup)) {
+        return validationGroup(value)
+      } else {
+        return true
+      }
     })
   })
 }

@@ -1040,7 +1040,7 @@ describe('plugin', function() {
           vm.str = [3, 2]
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [3, 3]
-          expect(vm.$v.str.$invalid).to.eql(false)
+          expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [3, '123']
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = [
@@ -1051,6 +1051,12 @@ describe('plugin', function() {
           expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [
             3, {
+              name: 'foo'
+            }
+          ]
+          expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [
+            3, 'abc', {
               name: 'foo'
             }
           ]
