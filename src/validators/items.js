@@ -24,6 +24,7 @@ module.exports = function itemsValidator(arraySchema, getPropertyValidationRules
     }
 
     // for items when type object, only check that it is a object
+    // $each validator in vuelidate takes care of the rest
     if (originallySingleSchema && arraySchema.items.type === 'object') {
       return values.every(function (value) {
         return isPlainObject(value)
