@@ -1158,8 +1158,18 @@ describe('plugin', function() {
             }
           })
 
-          // TODO: fix this assertion
+          // TODO: fix this assertion when https://github.com/monterail/vuelidate/pull/204 is merged
           // vm.str = undefined
+          // expect(vm.$v.str.$invalid).to.eql(false)
+          // vm.str = null
+          // expect(vm.$v.str.$invalid).to.eql(false)
+          // vm.str = false
+          // expect(vm.$v.str.$invalid).to.eql(false)
+          // vm.str = 1
+          // expect(vm.$v.str.$invalid).to.eql(false)
+          // vm.str = function() {}
+          // expect(vm.$v.str.$invalid).to.eql(false)
+          // vm.str = ''
           // expect(vm.$v.str.$invalid).to.eql(false)
 
           vm.str = ['string', 1]

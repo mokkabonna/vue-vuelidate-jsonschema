@@ -177,9 +177,9 @@ If the numbers in the array are not minimum 3 or any non numbers are in the arra
 }
 ```
 
-If the items in the array are not either a number with minimum value of 3 or an object with name and minLength of 3 then the array is invalid.
+If the first item in the array are not a number with minimum value of 3 and item 2 is not an object with name and minLength of 3 then the array is invalid.
 
-We can't expose any errors on the object itself if present, due to vuelidates limitation with the use of the $each keyword that requires all objects to be the same. Se next section.
+We can't expose any errors on the object itself if present, due to vuelidates limitation with the use of the $each keyword that requires all objects to be the same.
 
 #### Single schema and type object
 
