@@ -66,6 +66,12 @@ function setProperties(base, schema) {
     })
   }
 
+  if (Array.isArray(schema.oneOf)) {
+    schema.oneOf.forEach(function(subSchema) {
+      setProperties(base, subSchema)
+    })
+  }
+
   // then add properties from base object, taking precedence
   if (isPlainObject(schema.properties)) {
     Object.keys(schema.properties).forEach(function(key) {
@@ -111,25 +117,12 @@ function normalizeSchemas(schemaConfig) {
   }
 }
 
-function anySchemaHasProperties(schemas) {
-  if (!Array.isArray(schemas)) {
-    return false
-  }
-
-  return schemas.some(function(schema) {
-    return isPlainObject(schema.properties)
-  })
-}
-
 function generateValidationSchema(schemas) {
   var root = {}
 
   schemas.forEach(function(schemaConfig) {
     if (schemaConfig.schema.type !== 'object') {
       throw new Error('Schema with id ' + schemaConfig.schema.id + ' is not a schema of type object. This is currently not supported.')
-    }
-    if (!isPlainObject(schemaConfig.schema.properties) && !anySchemaHasProperties(schemaConfig.schema.allOf)) {
-      throw new Error('Schema with id ' + schemaConfig.schema.id + ' does not have a properties object.')
     }
   })
 
@@ -139,7 +132,7 @@ function generateValidationSchema(schemas) {
 
   if (roots.length) {
     root = roots.reduce(function(all, schemaConfig) {
-      merge(all, propertyRules.getValidationRulesForObject(schemaConfig.schema))
+      merge(all, propertyRules.getPropertyValidationRules({}, schemaConfig.schema))
       return all
     }, root)
   }
@@ -147,7 +140,7 @@ function generateValidationSchema(schemas) {
   var rest = difference(schemas, roots)
 
   return reduce(rest, function(all, schemaConfig) {
-    set(all, schemaConfig.mountPoint, propertyRules.getValidationRulesForObject(schemaConfig.schema))
+    set(all, schemaConfig.mountPoint, propertyRules.getPropertyValidationRules({}, schemaConfig.schema))
     return all
   }, root)
 }

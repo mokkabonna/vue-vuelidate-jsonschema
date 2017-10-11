@@ -1,7 +1,8 @@
 var allOfValidator = require('./validators/allOf')
 var betweenValidator = require('./validators/between')
 var equalValidator = require('./validators/const')
-var oneOfValidator = require('./validators/enum')
+var oneOfValidator = require('./validators/oneOf')
+var enumValidator = require('./validators/enum')
 var itemsValidator = require('./validators/items')
 var maxValidator = require('./validators/maximum')
 var maxLengthValidator = require('./validators/maxLength')
@@ -16,18 +17,11 @@ var uniqueValidator = require('./validators/uniqueItems')
 var reduce = require('lodash/reduce')
 
 function getValidationRulesForObject(objectSchema) {
-  var validationObj = {}
-
-  validationObj.schemaType = typeValidator(objectSchema, objectSchema.type)
-  if (objectSchema.hasOwnProperty('allOf')) {
-    validationObj.schemaAllOf = allOfValidator(objectSchema, objectSchema.allOf, getPropertyValidationRules)
-  }
-
   return reduce(objectSchema.properties, function(all, propertySchema, propKey) {
     var validationObj = getPropertyValidationRules(objectSchema, propertySchema, propKey)
     all[propKey] = validationObj
     return all
-  }, validationObj)
+  }, {})
 }
 
 function getPropertyValidationRules(schema, propertySchema, propKey) {
@@ -41,11 +35,6 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
     return propertySchema.type === type
   }
 
-  if (is('object')) {
-    validationObj = getValidationRulesForObject(propertySchema)
-    return validationObj
-  }
-
   if (Array.isArray(propertySchema.type)) {
     validationObj.schemaTypes = typeArrayValidator(propertySchema, propertySchema.type.map(function(type) {
       return typeValidator(propertySchema, type)
@@ -54,12 +43,21 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
     validationObj.schemaType = typeValidator(propertySchema, propertySchema.type)
   }
 
+  if (has('allOf')) {
+    validationObj.schemaAllOf = allOfValidator(propertySchema, propertySchema.allOf, getPropertyValidationRules)
+  }
+
+  if (has('oneOf')) {
+    validationObj.schemaOneOf = oneOfValidator(propertySchema, propertySchema.oneOf, getPropertyValidationRules)
+  }
+
   if (Array.isArray(schema.required) && schema.required.indexOf(propKey) !== -1) {
     validationObj.schemaRequired = requiredValidator(propertySchema)
   }
 
-  if (has('allOf')) {
-    validationObj.schemaAllOf = allOfValidator(propertySchema, propertySchema.allOf)
+  // add child properties
+  if (is('object') && has('properties')) {
+    validationObj = Object.assign(validationObj, getValidationRulesForObject(propertySchema))
   }
 
   if (has('minLength')) {
@@ -95,7 +93,7 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
   }
 
   if (has('enum')) {
-    validationObj.schemaEnum = oneOfValidator(propertySchema, propertySchema.enum)
+    validationObj.schemaEnum = enumValidator(propertySchema, propertySchema.enum)
   }
 
   if (has('const')) {
@@ -117,6 +115,5 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
 }
 
 module.exports = {
-  getPropertyValidationRules: getPropertyValidationRules,
-  getValidationRulesForObject: getValidationRulesForObject
+  getPropertyValidationRules: getPropertyValidationRules
 }

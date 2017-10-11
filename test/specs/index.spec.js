@@ -669,6 +669,99 @@ describe('plugin', function() {
           vm.name = '12345'
           expect(vm.$v.$invalid).to.eql(false)
         })
+
+        it('adds the allOf validator when string', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                name: {
+                  type: 'string',
+                  allOf: [
+                    {
+                      type: 'string',
+                      minLength: 5
+                    }
+                  ]
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.name.$params.schemaAllOf.type).to.eql('schemaAllOf')
+          expect(vm.$v.$invalid).to.eql(false)
+          // scaffolds the name data property
+          expect(vm.hasOwnProperty('name')).to.eql(true)
+          expect(vm.name).to.eql(undefined)
+          vm.name = '1234'
+          expect(vm.$v.$invalid).to.eql(true)
+          vm.name = '12345'
+          expect(vm.$v.$invalid).to.eql(false)
+        })
+      })
+
+      describe('oneOf', function() {
+        it('adds the oneOf validator', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              oneOf: [
+                {
+                  type: 'object',
+                  properties: {
+                    name: {
+                      type: 'string',
+                      minLength: 5
+                    }
+                  },
+                  required: ['name']
+                }
+              ]
+            }
+          })
+
+          expect(vm.$v.$params.schemaOneOf.type).to.eql('schemaOneOf')
+          expect(vm.hasOwnProperty('name')).to.eql(true)
+          expect(vm.name).to.eql('')
+          expect(vm.$v.$invalid).to.eql(true)
+          // scaffolds the name data property
+          vm.name = '1234'
+          expect(vm.$v.$invalid).to.eql(true)
+          vm.name = '12345'
+          expect(vm.$v.$invalid).to.eql(false)
+        })
+
+        it('adds the oneOf validator when string', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                name: {
+                  type: 'string',
+                  oneOf: [
+                    {
+                      type: 'string',
+                      minLength: 5
+                    }
+                  ]
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.name.$params.schemaOneOf.type).to.eql('schemaOneOf')
+          expect(vm.$v.$invalid).to.eql(false)
+          // scaffolds the name data property
+          expect(vm.hasOwnProperty('name')).to.eql(true)
+          expect(vm.name).to.eql(undefined)
+          vm.name = '1234'
+          expect(vm.$v.$invalid).to.eql(true)
+          vm.name = '12345'
+          expect(vm.$v.$invalid).to.eql(false)
+        })
       })
 
       describe('schemaRequired', function() {
