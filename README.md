@@ -41,11 +41,11 @@ export default {
 ```js
 export default {
   schema: {
-    type: 'object'
+    type: 'object',
     properties: {
       name: {
         type: 'string',
-        pattern: '^\\w+\s\\w+$'
+        pattern: '^\\w+\\s\\w+$'
       },
       username: {
         type: 'string',
