@@ -1,15 +1,15 @@
 var chai = require('chai')
 var requireUncached = require('require-uncached')
-var oneOfValidator = requireUncached('../../../src/validators/oneOf')
+var anyOfValidator = requireUncached('../../../src/validators/anyOf')
 var propertyRules = require('../../../src/property-rules')
 var expect = chai.expect
 
 var validator
-describe('oneOfValidator', function() {
+describe('anyOfValidator', function() {
   describe('when string', function() {
     var schema = {
       type: 'string',
-      oneOf: [
+      anyOf: [
         {
           type: 'string',
           minLength: 5
@@ -23,7 +23,7 @@ describe('oneOfValidator', function() {
       ]
     }
     beforeEach(function() {
-      validator = oneOfValidator(schema, schema.oneOf, propertyRules.getPropertyValidationRules)
+      validator = anyOfValidator(schema, schema.anyOf, propertyRules.getPropertyValidationRules)
     })
 
     it('is valid if undefined, required validator handles that', function() {
@@ -55,15 +55,15 @@ describe('oneOfValidator', function() {
       expect(validator('ab')).to.eql(true)
     })
 
-    it('is invalid if 2 match', function() {
-      expect(validator('ab12')).to.eql(false)
+    it('is valid if 2 match', function() {
+      expect(validator('ab12')).to.eql(true)
     })
   })
 
   describe('when object', function() {
     var schema = {
       type: 'object',
-      oneOf: [
+      anyOf: [
         {
           type: 'object',
           properties: {
@@ -88,7 +88,7 @@ describe('oneOfValidator', function() {
       ]
     }
     beforeEach(function() {
-      validator = oneOfValidator(schema, schema.oneOf, propertyRules.getPropertyValidationRules)
+      validator = anyOfValidator(schema, schema.anyOf, propertyRules.getPropertyValidationRules)
     })
 
     it('is valid when undefined or not object, other validators handle that', function() {

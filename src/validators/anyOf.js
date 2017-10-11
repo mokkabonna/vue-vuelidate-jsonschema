@@ -4,9 +4,9 @@ var typeValidator = require('./type')
 var isPlainObject = require('lodash/isPlainObject')
 var every = require('lodash/every')
 
-module.exports = function oneOfValidator(propertySchema, schemas, getPropertyValidationRules) {
+module.exports = function anyOfValidator(propertySchema, schemas, getPropertyValidationRules) {
   return vuelidate.withParams({
-    type: 'schemaOneOf',
+    type: 'schemaAnyOf',
     schemas: schemas,
     schema: propertySchema
   }, function(val) {
@@ -42,10 +42,8 @@ module.exports = function oneOfValidator(propertySchema, schemas, getPropertyVal
       }
     })
 
-    var matching = validationForGroups.filter(function(validatorGroup) {
+    return validationForGroups.some(function(validatorGroup) {
       return validatorGroup(val)
     })
-
-    return matching.length === 1
   })
 }

@@ -59,18 +59,16 @@ function getDefaultValue(schema, isRequired) {
 }
 
 function setProperties(base, schema) {
+  var additionalScaffoldingSchemas = ['oneOf', 'anyOf', 'allOf']
   // set all properties based on default values etc in allOf
-  if (Array.isArray(schema.allOf)) {
-    schema.allOf.forEach(function(subSchema) {
-      setProperties(base, subSchema)
-    })
-  }
 
-  if (Array.isArray(schema.oneOf)) {
-    schema.oneOf.forEach(function(subSchema) {
-      setProperties(base, subSchema)
-    })
-  }
+  additionalScaffoldingSchemas.forEach(function(prop) {
+    if (Array.isArray(schema[prop])) {
+      schema[prop].forEach(function(subSchema) {
+        setProperties(base, subSchema)
+      })
+    }
+  })
 
   // then add properties from base object, taking precedence
   if (isPlainObject(schema.properties)) {

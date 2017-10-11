@@ -2,6 +2,7 @@ var allOfValidator = require('./validators/allOf')
 var betweenValidator = require('./validators/between')
 var equalValidator = require('./validators/const')
 var oneOfValidator = require('./validators/oneOf')
+var anyOfValidator = require('./validators/anyOf')
 var enumValidator = require('./validators/enum')
 var itemsValidator = require('./validators/items')
 var maxValidator = require('./validators/maximum')
@@ -49,6 +50,10 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
 
   if (has('oneOf')) {
     validationObj.schemaOneOf = oneOfValidator(propertySchema, propertySchema.oneOf, getPropertyValidationRules)
+  }
+
+  if (has('anyOf')) {
+    validationObj.schemaAnyOf = anyOfValidator(propertySchema, propertySchema.anyOf, getPropertyValidationRules)
   }
 
   if (Array.isArray(schema.required) && schema.required.indexOf(propKey) !== -1) {

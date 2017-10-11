@@ -764,6 +764,69 @@ describe('plugin', function() {
         })
       })
 
+      describe('anyOf', function() {
+        it('adds the anyOf validator', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              anyOf: [
+                {
+                  type: 'object',
+                  properties: {
+                    name: {
+                      type: 'string',
+                      minLength: 5
+                    }
+                  },
+                  required: ['name']
+                }
+              ]
+            }
+          })
+
+          expect(vm.$v.$params.schemaAnyOf.type).to.eql('schemaAnyOf')
+          expect(vm.hasOwnProperty('name')).to.eql(true)
+          expect(vm.name).to.eql('')
+          expect(vm.$v.$invalid).to.eql(true)
+          // scaffolds the name data property
+          vm.name = '1234'
+          expect(vm.$v.$invalid).to.eql(true)
+          vm.name = '12345'
+          expect(vm.$v.$invalid).to.eql(false)
+        })
+
+        it('adds the anyOf validator when string', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                name: {
+                  type: 'string',
+                  anyOf: [
+                    {
+                      type: 'string',
+                      minLength: 5
+                    }
+                  ]
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.name.$params.schemaAnyOf.type).to.eql('schemaAnyOf')
+          expect(vm.$v.$invalid).to.eql(false)
+          // scaffolds the name data property
+          expect(vm.hasOwnProperty('name')).to.eql(true)
+          expect(vm.name).to.eql(undefined)
+          vm.name = '1234'
+          expect(vm.$v.$invalid).to.eql(true)
+          vm.name = '12345'
+          expect(vm.$v.$invalid).to.eql(false)
+        })
+      })
+
       describe('schemaRequired', function() {
         // required should not be added based on json schema required, it has not the same meaning
         it('adds required validator to model, not allowing undefined', function() {

@@ -136,6 +136,7 @@ We can with confidence also create data properties for **added** and **nodefault
 ## Supported json schema validation rules
 
 - allOf => schemaAllOf
+- anyOf => schemaAnyOf
 - const => schemaConst
 - enum => schemaEnum
 - items => schemaItems, if items is a schema of type object, the $each property is also used
@@ -146,6 +147,7 @@ We can with confidence also create data properties for **added** and **nodefault
 - minItems => schemaMinItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
 - minLength => schemaMinLength
 - multipleOf => schemaMultipleOf
+- oneOf => schemaOneOf
 - pattern => schemaPattern
 - required => schemaRequired
 - type => schemaType, if array of types then schemaTypes
