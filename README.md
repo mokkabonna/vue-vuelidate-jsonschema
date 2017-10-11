@@ -158,6 +158,10 @@ However for the **not** validator we don't consider the default values, we alway
 
 The plan is to support all rules. PR's are welcome.
 
+### Validation of the json schema itself
+
+This library does little to no validation of the schema itself. So if you have a property of type integer and define a minLength property (an unsupported validator for integer), that validator is actually added. There are loads of tools that do validation for you and this should be ideally be done at creation time of the schema rather than at runtime, adding overhead.
+
 ### Property schema exposure
 
 The schema for the property and any params are passed to all the validators and available like this:
