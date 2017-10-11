@@ -340,26 +340,28 @@ describe('plugin', function() {
               default: 'priority'
             }
           },
-          allOf: [{
-            type: 'object',
-            properties: {
-              prop1: {
-                type: 'string',
-                default: 'does not override default value in main schema'
+          allOf: [
+            {
+              type: 'object',
+              properties: {
+                prop1: {
+                  type: 'string',
+                  default: 'does not override default value in main schema'
+                }
+              }
+            }, {
+              type: 'object',
+              properties: {
+                added: {
+                  type: 'string',
+                  default: 'added'
+                },
+                nodefault: {
+                  type: 'string'
+                }
               }
             }
-          }, {
-            type: 'object',
-            properties: {
-              added: {
-                type: 'string',
-                default: 'added'
-              },
-              nodefault: {
-                type: 'string'
-              }
-            }
-          }]
+          ]
         }
       })
 
@@ -823,6 +825,46 @@ describe('plugin', function() {
           vm.name = '1234'
           expect(vm.$v.$invalid).to.eql(true)
           vm.name = '12345'
+          expect(vm.$v.$invalid).to.eql(false)
+        })
+      })
+
+      describe('not', function() {
+        it('adds the not validator', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              not: {
+                type: 'object',
+                properties: {
+                  name: {
+                    type: 'string',
+                    minLength: 5,
+                    default: '12345'
+                  }
+                },
+                required: ['name']
+              }
+            }
+          })
+
+          expect(vm.$v.$params.schemaNot.type).to.eql('schemaNot')
+          // scaffolds the name data property
+          expect(vm.hasOwnProperty('name')).to.eql(true)
+          // does not set name to the default value, this is specific for the not validator
+          // we don't want it to be scaffolded with a likely invalid value
+          // but we still want it scaffolded
+          expect(vm.name).to.eql(undefined)
+          // is not invalid since it is required by the not schema,
+          // and therefore is valid
+          expect(vm.$v.$invalid).to.eql(false)
+          // still not invalid since when present it is required to be minLength 5
+          vm.name = ''
+          expect(vm.$v.$invalid).to.eql(false)
+          vm.name = '12345'
+          expect(vm.$v.$invalid).to.eql(true)
+          vm.name = '1234'
           expect(vm.$v.$invalid).to.eql(false)
         })
       })

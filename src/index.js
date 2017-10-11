@@ -26,31 +26,31 @@ function getVue(rootVm) {
   return InnerVue
 }
 
-function getDefaultValue(schema, isRequired) {
-  if (schema.hasOwnProperty('default')) {
+function getDefaultValue(schema, isRequired, ignoreDefaultProp) {
+  if (schema.hasOwnProperty('default') && !ignoreDefaultProp) {
     return schema.default
   } else if (schema.type === 'integer' || schema.type === 'number') {
-    return isRequired
+    return isRequired && !ignoreDefaultProp
       ? 0
       : undefined
   } else if (schema.type === 'string') {
-    return isRequired
+    return isRequired && !ignoreDefaultProp
       ? ''
       : undefined
   } else if (schema.type === 'boolean') {
-    return isRequired
+    return isRequired && !ignoreDefaultProp
       ? false
       : undefined
   } else if (schema.type === 'object') {
-    return isRequired
+    return isRequired && !ignoreDefaultProp
       ? {}
       : undefined
   } else if (schema.type === 'array') {
-    return isRequired
+    return isRequired && !ignoreDefaultProp
       ? []
       : undefined
   } else if (schema.type === 'null') {
-    return isRequired
+    return isRequired && !ignoreDefaultProp
       ? null
       : undefined
   } else {
@@ -58,8 +58,9 @@ function getDefaultValue(schema, isRequired) {
   }
 }
 
-function setProperties(base, schema) {
+function setProperties(base, schema, ignoreDefaultProp) {
   var additionalScaffoldingSchemas = ['oneOf', 'anyOf', 'allOf']
+  var additionalNonDefault = ['not']
   // set all properties based on default values etc in allOf
 
   additionalScaffoldingSchemas.forEach(function(prop) {
@@ -70,14 +71,24 @@ function setProperties(base, schema) {
     }
   })
 
+  additionalNonDefault.forEach(function(prop) {
+    if (Array.isArray(schema[prop])) {
+      schema[prop].forEach(function(subSchema) {
+        setProperties(base, subSchema, true)
+      })
+    } else if (isPlainObject(schema[prop])) {
+      setProperties(base, schema[prop], true)
+    }
+  })
+
   // then add properties from base object, taking precedence
   if (isPlainObject(schema.properties)) {
     Object.keys(schema.properties).forEach(function(key) {
       var innerSchema = schema.properties[key]
       var isRequired = Array.isArray(schema.required) && schema.required.indexOf(key) !== -1
-      base[key] = getDefaultValue(innerSchema, isRequired)
+      base[key] = getDefaultValue(innerSchema, isRequired, ignoreDefaultProp)
       if (innerSchema.type === 'object' && innerSchema.properties) {
-        setProperties(base[key], innerSchema)
+        setProperties(base[key], innerSchema, ignoreDefaultProp)
       }
     })
   }

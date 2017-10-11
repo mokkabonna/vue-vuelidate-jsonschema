@@ -147,6 +147,7 @@ We can with confidence also create data properties for **added** and **nodefault
 - minItems => schemaMinItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
 - minLength => schemaMinLength
 - multipleOf => schemaMultipleOf
+- not => schemaNot
 - oneOf => schemaOneOf
 - pattern => schemaPattern
 - required => schemaRequired
