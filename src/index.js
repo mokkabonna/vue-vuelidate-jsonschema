@@ -14,10 +14,14 @@ var propertyRules = require('./property-rules')
 var cachedVue
 
 function getVue(rootVm) {
-  if (cachedVue) return cachedVue
+  if (cachedVue) {
+    return cachedVue
+  }
   var InnerVue = rootVm.constructor
   /* istanbul ignore next */
-  while (InnerVue.super) InnerVue = InnerVue.super
+  while (InnerVue.super) {
+    InnerVue = InnerVue.super
+  }
   cachedVue = InnerVue
   return InnerVue
 }
@@ -26,31 +30,53 @@ function getDefaultValue(schema, isRequired) {
   if (schema.hasOwnProperty('default')) {
     return schema.default
   } else if (schema.type === 'integer' || schema.type === 'number') {
-    return isRequired ? 0 : undefined
+    return isRequired
+      ? 0
+      : undefined
   } else if (schema.type === 'string') {
-    return isRequired ? '' : undefined
+    return isRequired
+      ? ''
+      : undefined
   } else if (schema.type === 'boolean') {
-    return isRequired ? false : undefined
+    return isRequired
+      ? false
+      : undefined
   } else if (schema.type === 'object') {
-    return isRequired ? {} : undefined
+    return isRequired
+      ? {}
+      : undefined
   } else if (schema.type === 'array') {
-    return isRequired ? [] : undefined
+    return isRequired
+      ? []
+      : undefined
   } else if (schema.type === 'null') {
-    return isRequired ? null : undefined
+    return isRequired
+      ? null
+      : undefined
   } else {
     return undefined
   }
 }
 
 function setProperties(base, schema) {
-  Object.keys(schema.properties).forEach(function(key) {
-    var innerSchema = schema.properties[key]
-    var isRequired = Array.isArray(schema.required) && schema.required.indexOf(key) !== -1
-    base[key] = getDefaultValue(innerSchema, isRequired)
-    if (innerSchema.type === 'object' && innerSchema.properties) {
-      setProperties(base[key], innerSchema)
-    }
-  })
+  // set all properties based on default values etc in allOf
+  if (Array.isArray(schema.allOf)) {
+    schema.allOf.forEach(function(subSchema) {
+      setProperties(base, subSchema)
+    })
+  }
+
+  // then add properties from base object, taking precedence
+  if (isPlainObject(schema.properties)) {
+    Object.keys(schema.properties).forEach(function(key) {
+      var innerSchema = schema.properties[key]
+      var isRequired = Array.isArray(schema.required) && schema.required.indexOf(key) !== -1
+      base[key] = getDefaultValue(innerSchema, isRequired)
+      if (innerSchema.type === 'object' && innerSchema.properties) {
+        setProperties(base[key], innerSchema)
+      }
+    })
+  }
 }
 
 function createDataProperties(schemas) {
@@ -72,18 +98,27 @@ function normalizeSchemas(schemaConfig) {
       if (config.mountPoint) {
         return config
       } else {
-        return {
-          mountPoint: '.',
-          schema: config
-        }
+        return {mountPoint: '.', schema: config}
       }
     })
   } else {
-    return [{
-      mountPoint: '.',
-      schema: schemaConfig
-    }]
+    return [
+      {
+        mountPoint: '.',
+        schema: schemaConfig
+      }
+    ]
   }
+}
+
+function anySchemaHasProperties(schemas) {
+  if (!Array.isArray(schemas)) {
+    return false
+  }
+
+  return schemas.some(function(schema) {
+    return isPlainObject(schema.properties)
+  })
 }
 
 function generateValidationSchema(schemas) {
@@ -93,7 +128,7 @@ function generateValidationSchema(schemas) {
     if (schemaConfig.schema.type !== 'object') {
       throw new Error('Schema with id ' + schemaConfig.schema.id + ' is not a schema of type object. This is currently not supported.')
     }
-    if (!isPlainObject(schemaConfig.schema.properties)) {
+    if (!isPlainObject(schemaConfig.schema.properties) && !anySchemaHasProperties(schemaConfig.schema.allOf)) {
       throw new Error('Schema with id ' + schemaConfig.schema.id + ' does not have a properties object.')
     }
   })
@@ -104,7 +139,7 @@ function generateValidationSchema(schemas) {
 
   if (roots.length) {
     root = roots.reduce(function(all, schemaConfig) {
-      merge(all, propertyRules.getValidationRules(schemaConfig.schema))
+      merge(all, propertyRules.getValidationRulesForObject(schemaConfig.schema))
       return all
     }, root)
   }
@@ -112,7 +147,7 @@ function generateValidationSchema(schemas) {
   var rest = difference(schemas, roots)
 
   return reduce(rest, function(all, schemaConfig) {
-    set(all, schemaConfig.mountPoint, propertyRules.getValidationRules(schemaConfig.schema))
+    set(all, schemaConfig.mountPoint, propertyRules.getValidationRulesForObject(schemaConfig.schema))
     return all
   }, root)
 }

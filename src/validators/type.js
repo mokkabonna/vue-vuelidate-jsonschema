@@ -5,11 +5,13 @@ var isInteger = require('lodash/isInteger')
 var isFinite = require('lodash/isFinite')
 var isBoolean = require('lodash/isBoolean')
 var isString = require('lodash/isString')
-var isPlainObject = require('lodash/isPlainObject')
+var isObject = require('lodash/isObject')
 
 var jsonTypes = {
   string: isString,
-  object: isPlainObject,
+  object: function(val) {
+    return isObject(val) && !Array.isArray(val)
+  },
   boolean: isBoolean,
   array: Array.isArray,
   'null': isNull,

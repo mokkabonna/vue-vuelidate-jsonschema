@@ -96,21 +96,59 @@ export default {
 
 If the property have a default value, that is **always** used. If it does not and the property is not required the value is set to `undefined`. If the property is required then the value is set to string: `''`, boolean: `false`, object: `{}`, array: `[]`, null: `null`, and for both number and integer: `0`
 
+### If allOf present
+
+If you have the following schema
+```js
+{
+  type: 'object',
+  properties: {
+    prop1: {
+      type: 'string',
+      default: 'priority'
+    }
+  },
+  allOf: [{
+    type: 'object',
+    properties: {
+      prop1: {
+        type: 'string',
+        default: 'does not override default value in main schema'
+      }
+    }
+  }, {
+    type: 'object',
+    properties: {
+      added: {
+        type: 'string',
+        default: 'added'
+      },
+      nodefault: {
+        type: 'string'
+      }
+    }
+  }]
+}
+```
+
+We can with confidence also create data properties for **added** and **nodefault**. allOf acts in a way as a extension of the base schema.
+
 ## Supported json schema validation rules
 
-- type => schemaType, if array of types then schemaTypes
-- required => schemaRequired
-- minLength => schemaMinLength
-- maxLength => schemaMaxLength
-- minItems => schemaMinItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
-- maxItems => schemaMaxItems (note that the name of the validator is schemaMaxItems, but the type of the validator itself is schemaMaxLength)
-- minimum => schemaMinimum
+- allOf => schemaAllOf
+- const => schemaConst
+- enum => schemaEnum
+- items => schemaItems, if items is a schema of type object, the $each property is also used
 - maximum => schemaMaximum
+- maxItems => schemaMaxItems (note that the name of the validator is schemaMaxItems, but the type of the validator itself is schemaMaxLength)
+- maxLength => schemaMaxLength
+- minimum => schemaMinimum
+- minItems => schemaMinItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
+- minLength => schemaMinLength
 - multipleOf => schemaMultipleOf
 - pattern => schemaPattern
-- enum => schemaEnum
-- const => schemaConst
-- items => schemaItems, if items is a schema of type object, the $each property is also used
+- required => schemaRequired
+- type => schemaType, if array of types then schemaTypes
 - uniqueItems => schemaUniqueItems
 
 The plan is to support all rules. PR's are welcome.

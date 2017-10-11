@@ -1,3 +1,4 @@
+var allOfValidator = require('./validators/allOf')
 var betweenValidator = require('./validators/between')
 var equalValidator = require('./validators/const')
 var oneOfValidator = require('./validators/enum')
@@ -14,13 +15,19 @@ var typeArrayValidator = require('./validators/typeArray')
 var uniqueValidator = require('./validators/uniqueItems')
 var reduce = require('lodash/reduce')
 
-function getValidationRules(schema) {
-  return reduce(schema.properties, function(all, propertySchema, propKey) {
-    var validationObj = getPropertyValidationRules(schema, propertySchema, propKey)
+function getValidationRulesForObject(objectSchema) {
+  var validationObj = {}
 
+  validationObj.schemaType = typeValidator(objectSchema, objectSchema.type)
+  if (objectSchema.hasOwnProperty('allOf')) {
+    validationObj.schemaAllOf = allOfValidator(objectSchema, objectSchema.allOf, getPropertyValidationRules)
+  }
+
+  return reduce(objectSchema.properties, function(all, propertySchema, propKey) {
+    var validationObj = getPropertyValidationRules(objectSchema, propertySchema, propKey)
     all[propKey] = validationObj
     return all
-  }, {})
+  }, validationObj)
 }
 
 function getPropertyValidationRules(schema, propertySchema, propKey) {
@@ -35,8 +42,7 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
   }
 
   if (is('object')) {
-    validationObj = getValidationRules(propertySchema)
-    validationObj.schemaType = typeValidator(propertySchema, propertySchema.type)
+    validationObj = getValidationRulesForObject(propertySchema)
     return validationObj
   }
 
@@ -50,6 +56,10 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
 
   if (Array.isArray(schema.required) && schema.required.indexOf(propKey) !== -1) {
     validationObj.schemaRequired = requiredValidator(propertySchema)
+  }
+
+  if (has('allOf')) {
+    validationObj.schemaAllOf = allOfValidator(propertySchema, propertySchema.allOf)
   }
 
   if (has('minLength')) {
@@ -97,7 +107,7 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
   }
 
   if (has('items') && is('array') && propertySchema.items.type === 'object') {
-    validationObj.$each = getValidationRules(propertySchema.items)
+    validationObj.$each = getValidationRulesForObject(propertySchema.items)
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   } else if (has('items') && is('array')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
@@ -108,5 +118,5 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
 
 module.exports = {
   getPropertyValidationRules: getPropertyValidationRules,
-  getValidationRules: getValidationRules
+  getValidationRulesForObject: getValidationRulesForObject
 }
