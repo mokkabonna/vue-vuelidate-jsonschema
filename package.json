@@ -6,7 +6,7 @@
   "scripts": {
     "eslint": "eslint src test",
     "test": "npm run eslint && nyc --reporter=html --reporter=text mocha test/specs",
-    "develop": "mocha test/specs/**/*spec.js --watch",
+    "develop": "mocha test/specs --recursive --watch",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "author": "Martin Hansen",
