@@ -106,6 +106,7 @@ If the property have a default value, that is **always** used. If it does not an
 - maxItems => schemaMaxItems (note that the name of the validator is schemaMaxItems, but the type of the validator itself is schemaMaxLength)
 - minimum => schemaMinimum
 - maximum => schemaMaximum
+- multipleOf => schemaMultipleOf
 - pattern => schemaPattern
 - enum => schemaEnum
 - const => schemaConst

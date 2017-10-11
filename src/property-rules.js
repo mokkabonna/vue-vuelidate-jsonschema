@@ -6,6 +6,7 @@ var maxValidator = require('./validators/maximum')
 var maxLengthValidator = require('./validators/maxLength')
 var minValidator = require('./validators/minimum')
 var minLengthValidator = require('./validators/minLength')
+var multipleOfValidator = require('./validators/multipleOf')
 var patternValidator = require('./validators/pattern')
 var requiredValidator = require('./validators/required')
 var typeValidator = require('./validators/type')
@@ -73,6 +74,10 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
     validationObj.schemaMinimum = minValidator(propertySchema, propertySchema.minimum)
   } else if (has('maximum')) {
     validationObj.schemaMaximum = maxValidator(propertySchema, propertySchema.maximum)
+  }
+
+  if (has('multipleOf')) {
+    validationObj.schemaMultipleOf = multipleOfValidator(propertySchema, propertySchema.multipleOf)
   }
 
   if (has('pattern')) {

@@ -767,6 +767,25 @@ describe('plugin', function() {
         it('should be tested')
       })
 
+      describe('multipleOf', function() {
+        it('adds the multipleOf validator', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              type: 'object',
+              properties: {
+                str: {
+                  type: 'number',
+                  multipleOf: 3
+                }
+              }
+            }
+          })
+
+          expect(vm.$v.str.$params.schemaMultipleOf.type).to.eql('schemaMultipleOf')
+        })
+      })
+
       describe('minItems', function() {
         it('adds the minLength validator', function() {
           var vm = new Vue({
