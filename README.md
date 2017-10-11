@@ -96,7 +96,7 @@ export default {
 
 If the property have a default value, that is **always** used. If it does not and the property is not required the value is set to `undefined`. If the property is required then the value is set to string: `''`, boolean: `false`, object: `{}`, array: `[]`, null: `null`, and for both number and integer: `0`
 
-### If allOf present
+### If allOf, oneOf, anyOf or not present
 
 If you have the following schema
 ```js
@@ -132,6 +132,8 @@ If you have the following schema
 ```
 
 We can with confidence also create data properties for **added** and **nodefault**. allOf acts in a way as a extension of the base schema.
+
+However for the **not** validator we don't consider the default values, we always scaffold with undefined as the value. We don't want any default values in a not schema to be filled in, since they are likely to be valid against the not schema, and therefore invalid against the main schema.
 
 ## Supported json schema validation rules
 
