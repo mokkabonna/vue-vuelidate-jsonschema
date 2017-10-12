@@ -3,7 +3,7 @@ var isPlainObject = require('lodash/isPlainObject')
 var every = require('lodash/every')
 var isFunction = require('lodash/isFunction')
 
-module.exports = function itemsValidator(arraySchema, getPropertyValidationRules, parentKey) {
+module.exports = function itemsValidator(arraySchema, getPropertyValidationRules) {
   var normalizedSchemas
   var originallySingleSchema
 
@@ -32,7 +32,7 @@ module.exports = function itemsValidator(arraySchema, getPropertyValidationRules
     }
 
     var validatorGroups = normalizedSchemas.map(function(itemSchema) {
-      return getPropertyValidationRules(arraySchema, itemSchema, parentKey)
+      return getPropertyValidationRules(arraySchema, itemSchema)
     })
 
     function validateGroup(item, validator, key) {

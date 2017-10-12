@@ -4,7 +4,7 @@ var typeValidator = require('./type')
 var isPlainObject = require('lodash/isPlainObject')
 var every = require('lodash/every')
 
-module.exports = function allOfValidator(propertySchema, schemas, getPropertyValidationRules, parentKey) {
+module.exports = function allOfValidator(propertySchema, schemas, getPropertyValidationRules) {
   return vuelidate.withParams({
     type: 'schemaAllOf',
     schemas: schemas,
@@ -20,7 +20,7 @@ module.exports = function allOfValidator(propertySchema, schemas, getPropertyVal
     }
 
     var validatorGroups = schemas.map(function(itemSchema) {
-      return getPropertyValidationRules(propertySchema, itemSchema, parentKey)
+      return getPropertyValidationRules(propertySchema, itemSchema)
     })
 
     function validateGroup(item, validator, key) {

@@ -46,19 +46,19 @@ function getPropertyValidationRules(parentSchema, propertySchema, parentKey, pro
   }
 
   if (has('allOf')) {
-    validationObj.schemaAllOf = allOfValidator(propertySchema, propertySchema.allOf, getPropertyValidationRules, parentKey)
+    validationObj.schemaAllOf = allOfValidator(propertySchema, propertySchema.allOf, getPropertyValidationRules)
   }
 
   if (has('oneOf')) {
-    validationObj.schemaOneOf = oneOfValidator(propertySchema, propertySchema.oneOf, getPropertyValidationRules, parentKey)
+    validationObj.schemaOneOf = oneOfValidator(propertySchema, propertySchema.oneOf, getPropertyValidationRules)
   }
 
   if (has('anyOf')) {
-    validationObj.schemaAnyOf = anyOfValidator(propertySchema, propertySchema.anyOf, getPropertyValidationRules, parentKey)
+    validationObj.schemaAnyOf = anyOfValidator(propertySchema, propertySchema.anyOf, getPropertyValidationRules)
   }
 
   if (has('not')) {
-    validationObj.schemaNot = notValidator(propertySchema, propertySchema.not, getPropertyValidationRules, parentKey)
+    validationObj.schemaNot = notValidator(propertySchema, propertySchema.not, getPropertyValidationRules)
   }
 
   // add child properties
@@ -112,9 +112,9 @@ function getPropertyValidationRules(parentSchema, propertySchema, parentKey, pro
 
   if (has('items') && is('array') && propertySchema.items.type === 'object') {
     validationObj.$each = getPropertyValidationRules(propertySchema, propertySchema.items, parentKey || '')
-    validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules, parentKey)
+    validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   } else if (has('items') && is('array')) {
-    validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules, parentKey)
+    validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   }
 
   if (Array.isArray(parentSchema.required) && parentSchema.required.indexOf(propKey) !== -1) {
