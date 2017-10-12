@@ -30,9 +30,14 @@ describe('schema fixtures valiation', function() {
 
         innerSchema.tests.forEach(function(test) {
           describe(test.description, function() {
-            it('populates data', function() {
+            it('is valid accoring to fixture data', function() {
               vm.mountPoint = test.data
               expect(vm.$v.mountPoint.$invalid).to.eql(!test.valid)
+            })
+
+            it('gets data', function() {
+              vm.mountPoint = test.data
+              expect(vm.getSchemaData(vm.$schema[0])).to.eql(test.data)
             })
           })
         })

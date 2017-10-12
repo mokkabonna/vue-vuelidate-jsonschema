@@ -48,6 +48,7 @@
     "vuelidate": "^0.6.0"
   },
   "dependencies": {
+    "flat": "^4.0.0",
     "lodash": "^4.17.4"
   }
 }

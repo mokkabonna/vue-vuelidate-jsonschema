@@ -4,11 +4,13 @@ var reduce = require('lodash/reduce')
 var merge = require('lodash/merge')
 var set = require('lodash/set')
 var get = require('lodash/get')
+var flatten = require('lodash/flatten')
 var difference = require('lodash/difference')
 var omit = require('lodash/omit')
 var isPlainObject = require('lodash/isPlainObject')
 var cloneDeep = require('lodash/cloneDeep')
 var isFunction = require('lodash/isFunction')
+var flattenObject = require('flat')
 var propertyRules = require('./property-rules')
 
 var cachedVue
@@ -17,8 +19,12 @@ var defaultValues = {
   number: 0,
   string: '',
   boolean: false,
-  object: {},
-  array: [],
+  object: function() {
+    return {} // make sure we don't share object reference, create new copy each time
+  },
+  array: function() {
+    return [] // make sure we don't share object reference, create new copy each time
+  },
   'null': null
 }
 
@@ -43,7 +49,8 @@ function getDefaultValue(schema, isRequired, ignoreDefaultProp) {
   } else if (!isRequired) {
     return undefined
   } else {
-    return defaultValues[schema.type]
+    var defaultValue = defaultValues[schema.type]
+    return isFunction(defaultValue) ? defaultValue() : defaultValue
   }
 }
 
@@ -75,7 +82,12 @@ function setProperties(base, schema, ignoreDefaultProp) {
     Object.keys(schema.properties).forEach(function(key) {
       var innerSchema = schema.properties[key]
       var isRequired = Array.isArray(schema.required) && schema.required.indexOf(key) !== -1
-      base[key] = getDefaultValue(innerSchema, isRequired, ignoreDefaultProp)
+      var existing = base[key]
+      if (isPlainObject(existing)) {
+        base[key] = merge(existing, getDefaultValue(innerSchema, isRequired, ignoreDefaultProp))
+      } else {
+        base[key] = getDefaultValue(innerSchema, isRequired, ignoreDefaultProp)
+      }
       if (innerSchema.type === 'object' && innerSchema.properties) {
         setProperties(base[key], innerSchema, ignoreDefaultProp)
       }
@@ -87,7 +99,17 @@ function createDataProperties(schemas) {
   return reduce(schemas, function(all, schemaConfig) {
     if (schemaConfig.mountPoint !== '.') {
       // scaffold structure
-      set(all, schemaConfig.mountPoint, getDefaultValue(schemaConfig.schema, true)) // TODO support non object schemas
+
+      var mountPoint = get(all, schemaConfig.mountPoint)
+      var defValue = getDefaultValue(schemaConfig.schema, true)
+
+      if (isPlainObject(mountPoint)) {
+        mountPoint = merge(mountPoint, defValue)
+      } else {
+        mountPoint = defValue
+      }
+
+      set(all, schemaConfig.mountPoint, mountPoint)
       setProperties(get(all, schemaConfig.mountPoint), schemaConfig.schema)
     } else {
       setProperties(all, schemaConfig.schema)
@@ -112,12 +134,10 @@ function normalizeSchemas(schemaConfig) {
     if (schemaConfig.mountPoint) {
       return [schemaConfig]
     } else {
-      return [
-        {
-          mountPoint: '.',
-          schema: schemaConfig
-        }
-      ]
+      return [{
+        mountPoint: '.',
+        schema: schemaConfig
+      }]
     }
   }
 }
@@ -166,6 +186,34 @@ var mixin = {
         return {}
       }
     }, this.$options.validations)
+
+    this.$options.methods = Vue.config.optionMergeStrategies.methods({
+      getSchemaData: function(schemaConfig) {
+        var originallyArray = Array.isArray(schemaConfig)
+        var normalizedSchemas = Array.isArray(schemaConfig) ? schemaConfig : [schemaConfig]
+        var self = this
+        return reduce(normalizedSchemas, function(all, schema) {
+          var root = self
+          var flatStructure = flattenObject(createDataProperties(normalizedSchemas))
+          if (schemaConfig.mountPoint !== '.' && !originallyArray) {
+            root = get(self, schemaConfig.mountPoint)
+
+            if (isPlainObject(root)) {
+              flatStructure = reduce(flatStructure, function(all, val, key) {
+                all[key.replace(schemaConfig.mountPoint, '').replace(/^\./, '')] = val
+                return all
+              }, {})
+            } else {
+              return root
+            }
+          }
+
+          return reduce(flatStructure, function(all, val, path) {
+            return set(all, path, get(root, path))
+          }, all)
+        }, {})
+      }
+    }, this.$options.methods)
 
     function defineReactives(parent, obj) {
       for (var prop in obj) {

@@ -400,6 +400,15 @@ You need to use a `v-if` in your view to prevent the view from failing if you tr
 
 If one of your schemas contain a $ref property you can then resolve those manually in the promise or use [json-schema-ref-parser](https://github.com/BigstickCarpet/json-schema-ref-parser) to dereference your schema for you.
 
+## Extract data
+
+The mixin adds a method getSchemaData that you can call to get all the data that a schema originally helped scaffold.
+
+```js
+vm.getSchemaData(vm.$schema[0])
+```
+
+This will include any property that is undefined, but you will get rid of them when you do `JSON.stringify()`. For schema at a mountpoint, you will get only the structure from that mountpoint. If you call `getSchemaData` with an array of schemas you will always get a fully structured export from the root of your vm. Since you might have different schemas on different mountpoints.
 
 ## vuelidate error extractor
 
