@@ -5,14 +5,26 @@ var Vue = requireUncached('vue')
 var Vuelidate = requireUncached('vuelidate')
 var basic = require('../fixtures/schemas/basic.json')
 var medium = require('../fixtures/schemas/medium.json')
-var schemas = [basic, medium]
+var complex = require('../fixtures/schemas/complex.json')
+var $RefParser = require('json-schema-ref-parser')
 
+var schemas = [basic, medium, complex]
 var expect = chai.expect
 
 describe('schema fixtures valiation', function() {
   beforeEach(function() {
     Vue.use(plugin)
     Vue.use(Vuelidate.Vuelidate)
+    return Promise.all(schemas.map(function(innerSchema) {
+      return Promise.all(innerSchema.map(function(config) {
+        return $RefParser.dereference(config.schema).then(function(dereferenced) {
+          innerSchema.schema = dereferenced
+          return innerSchema
+        })
+      }))
+    })).then(function(all) {
+      schemas = all
+    })
   })
 
   schemas.forEach(function(schema) {
