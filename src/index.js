@@ -153,11 +153,7 @@ function generateValidationSchema(schemas) {
   var rest = difference(schemas, roots)
 
   return reduce(rest, function(all, schemaConfig) {
-    var parentPath = schemaConfig.mountPoint.split('.')
-    var prop = parentPath.pop()
-    var parent = parentPath.pop()
-    var rules = propertyRules.getPropertyValidationRules({}, schemaConfig.schema, parent, prop)
-    set(all, schemaConfig.mountPoint, rules)
+    set(all, schemaConfig.mountPoint, propertyRules.getPropertyValidationRules({}, schemaConfig.schema, ''))
     return all
   }, root)
 }
