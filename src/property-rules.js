@@ -18,15 +18,15 @@ var typeArrayValidator = require('./validators/typeArray')
 var uniqueValidator = require('./validators/uniqueItems')
 var reduce = require('lodash/reduce')
 
-function getValidationRulesForObject(objectSchema, objectKey) {
+function getValidationRulesForObject(objectSchema, isAttached) {
   return reduce(objectSchema.properties, function(all, propertySchema, propKey) {
-    var validationObj = getPropertyValidationRules(objectSchema, propertySchema, objectKey, propKey)
+    var validationObj = getPropertyValidationRules(objectSchema, propertySchema, isAttached, propKey)
     all[propKey] = validationObj
     return all
   }, {})
 }
 
-function getPropertyValidationRules(parentSchema, propertySchema, parentKey, propKey) {
+function getPropertyValidationRules(parentSchema, propertySchema, isAttached, propKey, attach) {
   var validationObj = {}
 
   function has(name) {
@@ -63,7 +63,7 @@ function getPropertyValidationRules(parentSchema, propertySchema, parentKey, pro
 
   // add child properties
   if (is('object') && has('properties')) {
-    validationObj = Object.assign(validationObj, getValidationRulesForObject(propertySchema, parentKey))
+    validationObj = Object.assign(validationObj, getValidationRulesForObject(propertySchema, isAttached))
   }
 
   if (has('minLength')) {
@@ -111,14 +111,14 @@ function getPropertyValidationRules(parentSchema, propertySchema, parentKey, pro
   }
 
   if (has('items') && is('array') && propertySchema.items.type === 'object') {
-    validationObj.$each = getPropertyValidationRules(propertySchema, propertySchema.items, parentKey)
+    validationObj.$each = getPropertyValidationRules(propertySchema, propertySchema.items, isAttached)
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   } else if (has('items') && is('array')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   }
 
   if (Array.isArray(parentSchema.required) && parentSchema.required.indexOf(propKey) !== -1) {
-    validationObj.schemaRequired = requiredValidator(propertySchema, parentKey)
+    validationObj.schemaRequired = requiredValidator(propertySchema, isAttached)
   }
 
   return validationObj

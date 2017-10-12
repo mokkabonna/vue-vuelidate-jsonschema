@@ -1,12 +1,12 @@
 var vuelidate = require('vuelidate')
 var noParamsRequired = require('./noParamsRequired')
 
-module.exports = function requiredValidator(propertySchema, parentKey) {
+module.exports = function requiredValidator(propertySchema, isAttached) {
   return vuelidate.withParams({
     type: 'schemaRequired',
     schema: propertySchema
   }, function(val, parent) {
-    if (!parent && parentKey === '') {
+    if (!parent && isAttached) {
       return true
     } else {
       return noParamsRequired(val)
