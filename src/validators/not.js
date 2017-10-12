@@ -4,7 +4,7 @@ var typeValidator = require('./type')
 var isPlainObject = require('lodash/isPlainObject')
 var every = require('lodash/every')
 
-module.exports = function notValidator(propertySchema, notSchema, getPropertyValidationRules) {
+module.exports = function notValidator(propertySchema, notSchema, getPropertyValidationRules, parentKey) {
   return vuelidate.withParams({
     type: 'schemaNot',
     not: notSchema,

@@ -98,7 +98,7 @@ function createDataProperties(schemas) {
   return reduce(schemas, function(all, schemaConfig) {
     if (schemaConfig.mountPoint !== '.') {
       // scaffold structure
-      set(all, schemaConfig.mountPoint, {}) // TODO support non object schemas
+      set(all, schemaConfig.mountPoint, getDefaultValue(schemaConfig.schema, true)) // TODO support non object schemas
       setProperties(get(all, schemaConfig.mountPoint), schemaConfig.schema)
     } else {
       setProperties(all, schemaConfig.schema)
@@ -117,31 +117,35 @@ function normalizeSchemas(schemaConfig) {
       }
     })
   } else {
-    return [
-      {
-        mountPoint: '.',
-        schema: schemaConfig
-      }
-    ]
+    if (schemaConfig.mountPoint) {
+      return [schemaConfig]
+    } else {
+      return [
+        {
+          mountPoint: '.',
+          schema: schemaConfig
+        }
+      ]
+    }
   }
 }
 
 function generateValidationSchema(schemas) {
   var root = {}
 
-  schemas.forEach(function(schemaConfig) {
-    if (schemaConfig.schema.type !== 'object') {
-      throw new Error('Schema with id ' + schemaConfig.schema.id + ' is not a schema of type object. This is currently not supported.')
-    }
-  })
-
   var roots = schemas.filter(function(schemaConfig) {
     return schemaConfig.mountPoint === '.'
   })
 
+  roots.forEach(function(schemaConfig) {
+    if (schemaConfig.schema.type !== 'object') {
+      throw new Error('Schema with id ' + schemaConfig.schema.id + ' has mount point at the root and is not a schema of type object. This is not supported. For non object schmeas you must define a mount point.')
+    }
+  })
+
   if (roots.length) {
     root = roots.reduce(function(all, schemaConfig) {
-      merge(all, propertyRules.getPropertyValidationRules({}, schemaConfig.schema))
+      merge(all, propertyRules.getPropertyValidationRules({}, schemaConfig.schema, ''))
       return all
     }, root)
   }
@@ -149,7 +153,11 @@ function generateValidationSchema(schemas) {
   var rest = difference(schemas, roots)
 
   return reduce(rest, function(all, schemaConfig) {
-    set(all, schemaConfig.mountPoint, propertyRules.getPropertyValidationRules({}, schemaConfig.schema))
+    var parentPath = schemaConfig.mountPoint.split('.')
+    var prop = parentPath.pop()
+    var parent = parentPath.pop()
+    var rules = propertyRules.getPropertyValidationRules({}, schemaConfig.schema, parent, prop)
+    set(all, schemaConfig.mountPoint, rules)
     return all
   }, root)
 }
@@ -218,7 +226,7 @@ var mixin = {
       Vue.util.defineReactive(this, '$schema', allSchemaPromise)
     } else {
       // rewrite schemas normalized
-      Vue.util.defineReactive(this, '$schema', normalized)
+      Vue.util.defineReactive(this, '$schema', calledSchemas)
       generateDataStructure(this)
     }
   }

@@ -18,15 +18,15 @@ var typeArrayValidator = require('./validators/typeArray')
 var uniqueValidator = require('./validators/uniqueItems')
 var reduce = require('lodash/reduce')
 
-function getValidationRulesForObject(objectSchema) {
+function getValidationRulesForObject(objectSchema, objectKey) {
   return reduce(objectSchema.properties, function(all, propertySchema, propKey) {
-    var validationObj = getPropertyValidationRules(objectSchema, propertySchema, propKey)
+    var validationObj = getPropertyValidationRules(objectSchema, propertySchema, objectKey, propKey)
     all[propKey] = validationObj
     return all
   }, {})
 }
 
-function getPropertyValidationRules(schema, propertySchema, propKey) {
+function getPropertyValidationRules(parentSchema, propertySchema, parentKey, propKey) {
   var validationObj = {}
 
   function has(name) {
@@ -41,33 +41,29 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
     validationObj.schemaTypes = typeArrayValidator(propertySchema, propertySchema.type.map(function(type) {
       return typeValidator(propertySchema, type)
     }))
-  } else {
+  } else if (has('type')) {
     validationObj.schemaType = typeValidator(propertySchema, propertySchema.type)
   }
 
   if (has('allOf')) {
-    validationObj.schemaAllOf = allOfValidator(propertySchema, propertySchema.allOf, getPropertyValidationRules)
+    validationObj.schemaAllOf = allOfValidator(propertySchema, propertySchema.allOf, getPropertyValidationRules, parentKey)
   }
 
   if (has('oneOf')) {
-    validationObj.schemaOneOf = oneOfValidator(propertySchema, propertySchema.oneOf, getPropertyValidationRules)
+    validationObj.schemaOneOf = oneOfValidator(propertySchema, propertySchema.oneOf, getPropertyValidationRules, parentKey)
   }
 
   if (has('anyOf')) {
-    validationObj.schemaAnyOf = anyOfValidator(propertySchema, propertySchema.anyOf, getPropertyValidationRules)
+    validationObj.schemaAnyOf = anyOfValidator(propertySchema, propertySchema.anyOf, getPropertyValidationRules, parentKey)
   }
 
   if (has('not')) {
-    validationObj.schemaNot = notValidator(propertySchema, propertySchema.not, getPropertyValidationRules)
-  }
-
-  if (Array.isArray(schema.required) && schema.required.indexOf(propKey) !== -1) {
-    validationObj.schemaRequired = requiredValidator(propertySchema)
+    validationObj.schemaNot = notValidator(propertySchema, propertySchema.not, getPropertyValidationRules, parentKey)
   }
 
   // add child properties
   if (is('object') && has('properties')) {
-    validationObj = Object.assign(validationObj, getValidationRulesForObject(propertySchema))
+    validationObj = Object.assign(validationObj, getValidationRulesForObject(propertySchema, parentKey))
   }
 
   if (has('minLength')) {
@@ -115,10 +111,14 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
   }
 
   if (has('items') && is('array') && propertySchema.items.type === 'object') {
-    validationObj.$each = getValidationRulesForObject(propertySchema.items)
-    validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
+    validationObj.$each = getPropertyValidationRules(propertySchema, propertySchema.items, parentKey || '')
+    validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules, parentKey)
   } else if (has('items') && is('array')) {
-    validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
+    validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules, parentKey)
+  }
+
+  if (Array.isArray(parentSchema.required) && parentSchema.required.indexOf(propKey) !== -1) {
+    validationObj.schemaRequired = requiredValidator(propertySchema, parentKey)
   }
 
   return validationObj

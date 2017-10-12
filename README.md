@@ -10,6 +10,7 @@ The goal is that if your vuelidate validation is valid then you will also pass v
 npm install vue-vuelidate-jsonschema --save
 ```
 
+
 ## Install plugin globally
 
 NOTE: if using this plugin as a global mixin, make sure to use it **before** you register Vuelidate.
@@ -422,6 +423,7 @@ Vue.use(VuelidateErrorExtractor, {
 - [x] support $ref inside schemas (will not support, but added docs for resolving refs with third party module)
 - [ ] export own validators
 - [ ] more tests for really complex schemas
+- [ ] scaffold data, populate, serialize and test output against mainstream json schema validator (ajv)
 - [x] document and test mounting procedure (multiple schemas in one vm)
 - [ ] possibly support and test circular $refs
 - [ ] better validation params for array items validation (when not object)
