@@ -18,15 +18,6 @@ var typeArrayValidator = require('./validators/typeArray')
 var uniqueValidator = require('./validators/uniqueItems')
 var reduce = require('lodash/reduce')
 
-function getValidationRulesForObject(objectSchema, isAttached) {
-  var required = objectSchema.required || []
-  return reduce(objectSchema.properties, function(all, propertySchema, propKey) {
-    var validationObj = getPropertyValidationRules(propertySchema, required.indexOf(propKey) !== -1, isAttached)
-    all[propKey] = validationObj
-    return all
-  }, {})
-}
-
 function getPropertyValidationRules(propertySchema, isRequired, isAttached) {
   var validationObj = {}
 
@@ -64,7 +55,11 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached) {
 
   // add child properties
   if (is('object') && has('properties')) {
-    validationObj = Object.assign(validationObj, getValidationRulesForObject(propertySchema, isAttached))
+    var req = propertySchema.required || []
+    validationObj = reduce(propertySchema.properties, function(all, propertySchema, propKey) {
+      all[propKey] = getPropertyValidationRules(propertySchema, req.indexOf(propKey) !== -1, isAttached)
+      return all
+    }, validationObj)
   }
 
   if (has('minLength')) {
