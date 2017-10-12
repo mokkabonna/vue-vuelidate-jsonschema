@@ -12,6 +12,15 @@ var isFunction = require('lodash/isFunction')
 var propertyRules = require('./property-rules')
 
 var cachedVue
+var defaultValues = {
+  integer: 0,
+  number: 0,
+  string: '',
+  boolean: false,
+  object: {},
+  array: [],
+  'null': null
+}
 
 function getVue(rootVm) {
   if (cachedVue) {
@@ -27,34 +36,14 @@ function getVue(rootVm) {
 }
 
 function getDefaultValue(schema, isRequired, ignoreDefaultProp) {
-  if (schema.hasOwnProperty('default') && !ignoreDefaultProp) {
-    return schema.default
-  } else if (schema.type === 'integer' || schema.type === 'number') {
-    return isRequired && !ignoreDefaultProp
-      ? 0
-      : undefined
-  } else if (schema.type === 'string') {
-    return isRequired && !ignoreDefaultProp
-      ? ''
-      : undefined
-  } else if (schema.type === 'boolean') {
-    return isRequired && !ignoreDefaultProp
-      ? false
-      : undefined
-  } else if (schema.type === 'object') {
-    return isRequired && !ignoreDefaultProp
-      ? {}
-      : undefined
-  } else if (schema.type === 'array') {
-    return isRequired && !ignoreDefaultProp
-      ? []
-      : undefined
-  } else if (schema.type === 'null') {
-    return isRequired && !ignoreDefaultProp
-      ? null
-      : undefined
-  } else {
+  if (ignoreDefaultProp) {
     return undefined
+  } else if (schema.hasOwnProperty('default')) {
+    return schema.default
+  } else if (!isRequired) {
+    return undefined
+  } else {
+    return defaultValues[schema.type]
   }
 }
 
@@ -113,16 +102,17 @@ function normalizeSchemas(schemaConfig) {
       if (config.mountPoint) {
         return config
       } else {
-        return {mountPoint: '.', schema: config}
+        return {
+          mountPoint: '.',
+          schema: config
+        }
       }
     })
   } else {
-    return [
-      {
-        mountPoint: '.',
-        schema: schemaConfig
-      }
-    ]
+    return [{
+      mountPoint: '.',
+      schema: schemaConfig
+    }]
   }
 }
 
@@ -182,11 +172,6 @@ var mixin = {
       }
     }
 
-    function generateDataStructure(self) {
-      var dataStructure = createDataProperties(self.$schema)
-      defineReactives(self, dataStructure)
-    }
-
     var normalized = normalizeSchemas(this.$options.schema)
 
     var calledSchemas = normalized.map(function(schemaConfig) {
@@ -212,14 +197,16 @@ var mixin = {
         })
       })).then(function(schemaConfigs) {
         self.$schema = schemaConfigs
-        generateDataStructure(self)
+        defineReactives(self, createDataProperties(schemaConfigs))
       })
 
       Vue.util.defineReactive(this, '$schema', allSchemaPromise)
     } else {
       // rewrite schemas normalized
       Vue.util.defineReactive(this, '$schema', normalized)
-      generateDataStructure(this)
+      this.$options.data = Vue.config.optionMergeStrategies.data(function() {
+        return createDataProperties(normalized)
+      }, this.$options.data)
     }
   }
 }
