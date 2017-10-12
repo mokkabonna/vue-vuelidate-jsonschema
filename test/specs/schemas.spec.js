@@ -28,7 +28,7 @@ describe('schema fixtures valiation', function() {
           })
         })
 
-        innerSchema.tests.slice().forEach(function(test) {
+        innerSchema.tests.forEach(function(test) {
           describe(test.description, function() {
             it('populates data', function() {
               vm.mountPoint = test.data

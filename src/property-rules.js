@@ -19,14 +19,15 @@ var uniqueValidator = require('./validators/uniqueItems')
 var reduce = require('lodash/reduce')
 
 function getValidationRulesForObject(objectSchema, isAttached) {
+  var required = objectSchema.required || []
   return reduce(objectSchema.properties, function(all, propertySchema, propKey) {
-    var validationObj = getPropertyValidationRules(objectSchema, propertySchema, isAttached, propKey)
+    var validationObj = getPropertyValidationRules(propertySchema, required.indexOf(propKey) !== -1, isAttached)
     all[propKey] = validationObj
     return all
   }, {})
 }
 
-function getPropertyValidationRules(parentSchema, propertySchema, isAttached, propKey, attach) {
+function getPropertyValidationRules(propertySchema, isRequired, isAttached) {
   var validationObj = {}
 
   function has(name) {
@@ -111,13 +112,12 @@ function getPropertyValidationRules(parentSchema, propertySchema, isAttached, pr
   }
 
   if (has('items') && is('array') && propertySchema.items.type === 'object') {
-    validationObj.$each = getPropertyValidationRules(propertySchema, propertySchema.items, isAttached)
-    validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
+    validationObj.$each = getPropertyValidationRules(propertySchema.items, true, isAttached)
   } else if (has('items') && is('array')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   }
 
-  if (Array.isArray(parentSchema.required) && parentSchema.required.indexOf(propKey) !== -1) {
+  if (isRequired) {
     validationObj.schemaRequired = requiredValidator(propertySchema, isAttached)
   }
 

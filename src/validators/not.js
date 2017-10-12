@@ -19,7 +19,7 @@ module.exports = function notValidator(propertySchema, notSchema, getPropertyVal
       return true
     }
 
-    var validatorGroup = getPropertyValidationRules(propertySchema, notSchema)
+    var validatorGroup = getPropertyValidationRules(notSchema)
 
     function validateGroup(item, validator, key) {
       if (isPlainObject(validator)) {

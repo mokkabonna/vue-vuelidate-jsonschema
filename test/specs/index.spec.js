@@ -1492,6 +1492,15 @@ describe('plugin', function() {
           expect(vm.$v.str.$each[0].name.$params.schemaMinLength.type).to.eql('schemaMinLength')
           expect(vm.$v.str.$each[1].name.$params.schemaMinLength.type).to.eql('schemaMinLength')
           expect(vm.$v.str.$invalid).to.eql(true)
+          vm.str = [undefined]
+          expect(vm.$v.str.$each[0].$params.schemaRequired.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$each[0].schemaRequired).to.eql(false)
+          vm.str = [1]
+          expect(vm.$v.str.$each[0].$params.schemaRequired.type).to.eql('schemaRequired')
+          expect(vm.$v.str.$each[0].$params.schemaType.type).to.eql('schemaType')
+          expect(vm.$v.str.$each[0].schemaRequired).to.eql(true)
+          expect(vm.$v.str.$each[0].schemaType).to.eql(false)
+          expect(vm.$v.str.$invalid).to.eql(true)
           vm.str = [
             {
               name: 'fo'

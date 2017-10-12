@@ -145,7 +145,7 @@ function generateValidationSchema(schemas) {
 
   if (roots.length) {
     root = roots.reduce(function(all, schemaConfig) {
-      merge(all, propertyRules.getPropertyValidationRules({}, schemaConfig.schema, true))
+      merge(all, propertyRules.getPropertyValidationRules(schemaConfig.schema, true, true))
       return all
     }, root)
   }
@@ -153,7 +153,7 @@ function generateValidationSchema(schemas) {
   var rest = difference(schemas, roots)
 
   return reduce(rest, function(all, schemaConfig) {
-    set(all, schemaConfig.mountPoint, propertyRules.getPropertyValidationRules({}, schemaConfig.schema, true))
+    set(all, schemaConfig.mountPoint, propertyRules.getPropertyValidationRules(schemaConfig.schema, true, true))
     return all
   }, root)
 }
