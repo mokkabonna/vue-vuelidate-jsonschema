@@ -7,6 +7,8 @@ var notValidator = require('./validators/not')
 var enumValidator = require('./validators/enum')
 var itemsValidator = require('./validators/items')
 var maxValidator = require('./validators/maximum')
+var maxPropertiesValidator = require('./validators/maxProperties')
+var minPropertiesValidator = require('./validators/minProperties')
 var maxLengthValidator = require('./validators/maxLength')
 var minValidator = require('./validators/minimum')
 var minLengthValidator = require('./validators/minLength')
@@ -81,6 +83,14 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
     validationObj.schemaMinimum = minValidator(propertySchema, propertySchema.minimum)
   } else if (has('maximum')) {
     validationObj.schemaMaximum = maxValidator(propertySchema, propertySchema.maximum)
+  }
+
+  if (has('maxProperties')) {
+    validationObj.schemaMaxProperties = maxPropertiesValidator(propertySchema, propertySchema.maxProperties)
+  }
+
+  if (has('minProperties')) {
+    validationObj.schemaMinProperties = minPropertiesValidator(propertySchema, propertySchema.minProperties)
   }
 
   if (has('multipleOf')) {

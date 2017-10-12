@@ -146,9 +146,11 @@ However for the **not** validator we don't consider the default values, we alway
 - maximum => schemaMaximum
 - maxItems => schemaMaxItems (note that the name of the validator is schemaMaxItems, but the type of the validator itself is schemaMaxLength)
 - maxLength => schemaMaxLength
+- maxProperties => schemaMaxProperties
 - minimum => schemaMinimum
 - minItems => schemaMinItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
 - minLength => schemaMinLength
+- minProperties => schemaMinProperties
 - multipleOf => schemaMultipleOf
 - not => schemaNot
 - oneOf => schemaOneOf
