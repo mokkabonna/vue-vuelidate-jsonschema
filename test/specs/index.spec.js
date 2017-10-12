@@ -226,9 +226,18 @@ describe('plugin', function() {
     it('adds properties to data object', function() {
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
+        data: function() {
+          return {
+            conflict: 'original'
+          }
+        },
         schema: {
           type: 'object',
           properties: {
+            conflict: {
+              type: 'string',
+              default: 'schema'
+            },
             prop1: {
               type: 'string'
             },
@@ -263,6 +272,7 @@ describe('plugin', function() {
         }
       })
 
+      expect(vm.conflict).to.eql('original')
       expect(vm.prop1).to.eql('')
       expect(vm.prop2).to.eql(0)
       expect(vm.prop3).to.eql({})
