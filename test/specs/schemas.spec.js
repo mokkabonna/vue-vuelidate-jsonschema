@@ -6,9 +6,10 @@ var Vuelidate = requireUncached('vuelidate')
 var basic = require('../fixtures/schemas/basic.json')
 var medium = require('../fixtures/schemas/medium.json')
 var complex = require('../fixtures/schemas/complex.json')
+var advanced = require('../fixtures/schemas/advanced.json')
 var $RefParser = require('json-schema-ref-parser')
 
-var schemas = [basic, medium, complex]
+var schemas = [basic, medium, complex, advanced]
 var expect = chai.expect
 
 describe('schema fixtures valiation', function() {
@@ -23,6 +24,14 @@ describe('schema fixtures valiation', function() {
         })
       }))
     })).then(function(all) {
+      var hasRefStill = JSON.stringify(all.map(function(obj) {
+        return obj.schema
+      })).indexOf('$ref') !== -1
+
+      if (hasRefStill) {
+        throw new Error('Error in test precondition, some refs are not resolved')
+      }
+
       schemas = all
     })
   })
@@ -44,12 +53,17 @@ describe('schema fixtures valiation', function() {
           describe(test.description, function() {
             it('is valid accoring to fixture data', function() {
               vm.mountPoint = test.data
-              expect(vm.$v.mountPoint.$invalid).to.eql(!test.valid)
+              var isValid = !vm.$v.mountPoint.$invalid
+              expect(isValid).to.eql(test.valid)
             })
 
             it('gets data', function() {
               vm.mountPoint = test.data
-              expect(vm.getSchemaData(vm.$schema[0])).to.eql(test.data)
+              // only test data export if the object is expected to be valid
+              // TODO: I think this is correct, but need to look into it
+              if (test.valid === true && vm.$v.mountPoint.$invalid === !test.valid) {
+                expect(removeUndefined(vm.getSchemaData(vm.$schema[0]))).to.eql(test.data)
+              }
             })
           })
         })
@@ -57,3 +71,7 @@ describe('schema fixtures valiation', function() {
     })
   })
 })
+
+function removeUndefined(obj) {
+  return JSON.parse(JSON.stringify(obj))
+}

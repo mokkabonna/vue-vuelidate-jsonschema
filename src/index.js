@@ -153,6 +153,14 @@ function generateValidationSchema(schemas) {
     if (schemaConfig.schema.type !== 'object') {
       throw new Error('Schema with id ' + schemaConfig.schema.id + ' has mount point at the root and is not a schema of type object. This is not supported. For non object schmeas you must define a mount point.')
     }
+
+    if (schemaConfig.schema.hasOwnProperty('patternProperties')) {
+      throw new Error('Schema with id ' + schemaConfig.schema.id + ' has sibling validator patternProperties. This is not supported when mounting on root. Use a mount point.')
+    }
+
+    if (!(schemaConfig.schema.additionalProperties === true || schemaConfig.schema.additionalProperties === undefined)) {
+      throw new Error('Schema with id ' + schemaConfig.schema.id + ' has sibling validators additionalProperties not equal to true. This is not supported when mounting on root. Since there are lots of extra properties on a vue instance.')
+    }
   })
 
   if (roots.length) {
@@ -196,6 +204,7 @@ var mixin = {
           var root = self
           var flatStructure = flattenObject(createDataProperties(normalizedSchemas))
           if (schemaConfig.mountPoint !== '.' && !originallyArray) {
+            flatStructure = flattenObject(get(self, schemaConfig.mountPoint))
             root = get(self, schemaConfig.mountPoint)
 
             if (isPlainObject(root)) {

@@ -52,6 +52,7 @@
       },
       "transaction": {
         "id": "#transaction",
+        "type": "object",
         "additionalProperties": false,
         "required": [
           "metadata",

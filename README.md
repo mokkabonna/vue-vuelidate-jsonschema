@@ -153,6 +153,7 @@ However for the **not** validator we don't consider the default values, we alway
 - not => schemaNot
 - oneOf => schemaOneOf
 - pattern => schemaPattern
+- patternProperties => schemaPatternProperties
 - required => schemaRequired
 - type => schemaType, if array of types then schemaTypes
 - uniqueItems => schemaUniqueItems
@@ -186,6 +187,10 @@ The schema for the property and any params are passed to all the validators and 
 ```
 
 This can be used to generate validation messages.
+
+### patternProperties and additionalProperties
+
+You can't have patternProperties on a schema mounted to root. And additionalProperties must be `undefined` or `true`. This is because you will likely run into problems since the vue instance have many extra properties. In these cases, use a mount point.
 
 ### Items and $each validation
 
@@ -408,7 +413,7 @@ The mixin adds a method getSchemaData that you can call to get all the data that
 vm.getSchemaData(vm.$schema[0])
 ```
 
-This will include any property that is undefined, but you will get rid of them when you do `JSON.stringify()`. For schema at a mountpoint, you will get only the structure from that mountpoint. If you call `getSchemaData` with an array of schemas you will always get a fully structured export from the root of your vm. Since you might have different schemas on different mountpoints.
+This will include any property that is undefined, but you will get rid of them when you do `JSON.stringify()`. For schema at a mountpoint, you will get only the structure from that mountpoint. But if you have mounted several schemas on the same mountpoint or below you will get those included. If you call `getSchemaData` with an array of schemas you will always get a fully structured export from the root of your vm. Since you might have different schemas on different mountpoints.
 
 ## vuelidate error extractor
 

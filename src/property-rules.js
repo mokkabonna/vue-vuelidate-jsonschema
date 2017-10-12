@@ -12,21 +12,18 @@ var minValidator = require('./validators/minimum')
 var minLengthValidator = require('./validators/minLength')
 var multipleOfValidator = require('./validators/multipleOf')
 var patternValidator = require('./validators/pattern')
+var patternPropertiesValidator = require('./validators/patternProperties')
 var requiredValidator = require('./validators/required')
 var typeValidator = require('./validators/type')
 var typeArrayValidator = require('./validators/typeArray')
 var uniqueValidator = require('./validators/uniqueItems')
 var reduce = require('lodash/reduce')
 
-function getPropertyValidationRules(propertySchema, isRequired, isAttached) {
+function getPropertyValidationRules(propertySchema, isRequired, isAttached, propKey) {
   var validationObj = {}
 
   function has(name) {
     return propertySchema.hasOwnProperty(name)
-  }
-
-  function is(type) {
-    return propertySchema.type === type
   }
 
   if (Array.isArray(propertySchema.type)) {
@@ -54,10 +51,10 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached) {
   }
 
   // add child properties
-  if (is('object') && has('properties')) {
+  if (has('properties')) {
     var req = propertySchema.required || []
     validationObj = reduce(propertySchema.properties, function(all, propertySchema, propKey) {
-      all[propKey] = getPropertyValidationRules(propertySchema, req.indexOf(propKey) !== -1, isAttached)
+      all[propKey] = getPropertyValidationRules(propertySchema, req.indexOf(propKey) !== -1, isAttached, propKey)
       return all
     }, validationObj)
   }
@@ -94,6 +91,10 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached) {
     validationObj.schemaPattern = patternValidator(propertySchema, new RegExp(propertySchema.pattern))
   }
 
+  if (has('patternProperties')) {
+    validationObj.schemaPatternProperties = patternPropertiesValidator(propertySchema, propertySchema.patternProperties, getPropertyValidationRules)
+  }
+
   if (has('enum')) {
     validationObj.schemaEnum = enumValidator(propertySchema, propertySchema.enum)
   }
@@ -106,9 +107,9 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached) {
     validationObj.schemaUniqueItems = uniqueValidator(propertySchema)
   }
 
-  if (has('items') && is('array') && propertySchema.items.type === 'object') {
+  if (has('items') && propertySchema.items.type === 'object') {
     validationObj.$each = getPropertyValidationRules(propertySchema.items, true, isAttached)
-  } else if (has('items') && is('array')) {
+  } else if (has('items')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   }
 

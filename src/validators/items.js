@@ -1,4 +1,5 @@
 var vuelidate = require('vuelidate')
+var typeValidator = require('./type')
 var isPlainObject = require('lodash/isPlainObject')
 var every = require('lodash/every')
 var isFunction = require('lodash/isFunction')
@@ -21,6 +22,17 @@ module.exports = function itemsValidator(arraySchema, getPropertyValidationRules
   }, function(values) {
     if (!Array.isArray(values) || values.length === 0) {
       return true
+    }
+
+    // ignore type errors, the type validator handles that
+    if (arraySchema.items.type === 'object') {
+      var hasTypeError = values.some(function(val) {
+        return !typeValidator(arraySchema, arraySchema.type)(val)
+      })
+
+      if (hasTypeError) {
+        return true
+      }
     }
 
     var validatorGroups = normalizedSchemas.map(function(itemSchema) {
