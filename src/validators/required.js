@@ -9,8 +9,6 @@ module.exports = function requiredValidator(propertySchema, isAttached) {
   }, function(val, parent) {
     if (!isPlainObject(parent) && isAttached) {
       return true
-    } else if (!parent && isAttached) {
-      return true
     } else {
       return noParamsRequired(val)
     }
