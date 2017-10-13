@@ -9,8 +9,6 @@ function noopValidator() {
 
 function customizer(objValue, srcValue, key, object, source, stack) {
   if (srcValue === undefined) {
-    delete object[key]
-    delete source[key]
     return noopValidator
   }
 }

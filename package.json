@@ -41,13 +41,15 @@
     "eslint-plugin-node": "^5.2.0",
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
+    "json-schema-ref-parser": "^3.3.1",
     "mocha": "^4.0.1",
     "nyc": "^11.2.1",
     "require-uncached": "^1.0.3",
-    "vue": "^2.4.4",
-    "vuelidate": "^0.6.0"
+    "vue": "^2.5.0",
+    "vuelidate": "^0.6.1"
   },
   "dependencies": {
+    "flat": "^4.0.0",
     "lodash": "^4.17.4"
   }
 }

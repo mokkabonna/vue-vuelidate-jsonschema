@@ -9,9 +9,23 @@ var omit = require('lodash/omit')
 var isPlainObject = require('lodash/isPlainObject')
 var cloneDeep = require('lodash/cloneDeep')
 var isFunction = require('lodash/isFunction')
+var flattenObject = require('flat')
 var propertyRules = require('./property-rules')
 
 var cachedVue
+var defaultValues = {
+  integer: 0,
+  number: 0,
+  string: '',
+  boolean: false,
+  object: function() {
+    return {} // make sure we don't share object reference, create new copy each time
+  },
+  array: function() {
+    return [] // make sure we don't share object reference, create new copy each time
+  },
+  'null': null
+}
 
 function getVue(rootVm) {
   if (cachedVue) {
@@ -27,34 +41,15 @@ function getVue(rootVm) {
 }
 
 function getDefaultValue(schema, isRequired, ignoreDefaultProp) {
-  if (schema.hasOwnProperty('default') && !ignoreDefaultProp) {
-    return schema.default
-  } else if (schema.type === 'integer' || schema.type === 'number') {
-    return isRequired && !ignoreDefaultProp
-      ? 0
-      : undefined
-  } else if (schema.type === 'string') {
-    return isRequired && !ignoreDefaultProp
-      ? ''
-      : undefined
-  } else if (schema.type === 'boolean') {
-    return isRequired && !ignoreDefaultProp
-      ? false
-      : undefined
-  } else if (schema.type === 'object') {
-    return isRequired && !ignoreDefaultProp
-      ? {}
-      : undefined
-  } else if (schema.type === 'array') {
-    return isRequired && !ignoreDefaultProp
-      ? []
-      : undefined
-  } else if (schema.type === 'null') {
-    return isRequired && !ignoreDefaultProp
-      ? null
-      : undefined
-  } else {
+  if (ignoreDefaultProp) {
     return undefined
+  } else if (schema.hasOwnProperty('default')) {
+    return schema.default
+  } else if (!isRequired) {
+    return undefined
+  } else {
+    var defaultValue = defaultValues[schema.type]
+    return isFunction(defaultValue) ? defaultValue() : defaultValue
   }
 }
 
@@ -86,7 +81,12 @@ function setProperties(base, schema, ignoreDefaultProp) {
     Object.keys(schema.properties).forEach(function(key) {
       var innerSchema = schema.properties[key]
       var isRequired = Array.isArray(schema.required) && schema.required.indexOf(key) !== -1
-      base[key] = getDefaultValue(innerSchema, isRequired, ignoreDefaultProp)
+      var existing = base[key]
+      if (isPlainObject(existing)) {
+        base[key] = merge(existing, getDefaultValue(innerSchema, isRequired, ignoreDefaultProp))
+      } else {
+        base[key] = getDefaultValue(innerSchema, isRequired, ignoreDefaultProp)
+      }
       if (innerSchema.type === 'object' && innerSchema.properties) {
         setProperties(base[key], innerSchema, ignoreDefaultProp)
       }
@@ -98,7 +98,17 @@ function createDataProperties(schemas) {
   return reduce(schemas, function(all, schemaConfig) {
     if (schemaConfig.mountPoint !== '.') {
       // scaffold structure
-      set(all, schemaConfig.mountPoint, {}) // TODO support non object schemas
+
+      var mountPoint = get(all, schemaConfig.mountPoint)
+      var defValue = getDefaultValue(schemaConfig.schema, true)
+
+      if (isPlainObject(mountPoint)) {
+        mountPoint = merge(mountPoint, defValue)
+      } else {
+        mountPoint = defValue
+      }
+
+      set(all, schemaConfig.mountPoint, mountPoint)
       setProperties(get(all, schemaConfig.mountPoint), schemaConfig.schema)
     } else {
       setProperties(all, schemaConfig.schema)
@@ -113,35 +123,48 @@ function normalizeSchemas(schemaConfig) {
       if (config.mountPoint) {
         return config
       } else {
-        return {mountPoint: '.', schema: config}
+        return {
+          mountPoint: '.',
+          schema: config
+        }
       }
     })
   } else {
-    return [
-      {
+    if (schemaConfig.mountPoint) {
+      return [schemaConfig]
+    } else {
+      return [{
         mountPoint: '.',
         schema: schemaConfig
-      }
-    ]
+      }]
+    }
   }
 }
 
 function generateValidationSchema(schemas) {
   var root = {}
 
-  schemas.forEach(function(schemaConfig) {
-    if (schemaConfig.schema.type !== 'object') {
-      throw new Error('Schema with id ' + schemaConfig.schema.id + ' is not a schema of type object. This is currently not supported.')
-    }
-  })
-
   var roots = schemas.filter(function(schemaConfig) {
     return schemaConfig.mountPoint === '.'
   })
 
+  roots.forEach(function(schemaConfig) {
+    if (schemaConfig.schema.type !== 'object') {
+      throw new Error('Schema with id ' + schemaConfig.schema.id + ' has mount point at the root and is not a schema of type object. This is not supported. For non object schmeas you must define a mount point.')
+    }
+
+    if (schemaConfig.schema.hasOwnProperty('patternProperties')) {
+      throw new Error('Schema with id ' + schemaConfig.schema.id + ' has sibling validator patternProperties. This is not supported when mounting on root. Use a mount point.')
+    }
+
+    if (!(schemaConfig.schema.additionalProperties === true || schemaConfig.schema.additionalProperties === undefined)) {
+      throw new Error('Schema with id ' + schemaConfig.schema.id + ' has sibling validators additionalProperties not equal to true. This is not supported when mounting on root. Since there are lots of extra properties on a vue instance.')
+    }
+  })
+
   if (roots.length) {
     root = roots.reduce(function(all, schemaConfig) {
-      merge(all, propertyRules.getPropertyValidationRules({}, schemaConfig.schema))
+      merge(all, propertyRules.getPropertyValidationRules(schemaConfig.schema, true, true))
       return all
     }, root)
   }
@@ -149,7 +172,7 @@ function generateValidationSchema(schemas) {
   var rest = difference(schemas, roots)
 
   return reduce(rest, function(all, schemaConfig) {
-    set(all, schemaConfig.mountPoint, propertyRules.getPropertyValidationRules({}, schemaConfig.schema))
+    set(all, schemaConfig.mountPoint, propertyRules.getPropertyValidationRules(schemaConfig.schema, true, true))
     return all
   }, root)
 }
@@ -171,6 +194,35 @@ var mixin = {
       }
     }, this.$options.validations)
 
+    this.$options.methods = Vue.config.optionMergeStrategies.methods({
+      getSchemaData: function(schemaConfig) {
+        var originallyArray = Array.isArray(schemaConfig)
+        var normalizedSchemas = Array.isArray(schemaConfig) ? schemaConfig : [schemaConfig]
+        var self = this
+        return reduce(normalizedSchemas, function(all, schema) {
+          var root = self
+          var flatStructure = flattenObject(createDataProperties(normalizedSchemas))
+          if (schemaConfig.mountPoint !== '.' && !originallyArray) {
+            flatStructure = flattenObject(get(self, schemaConfig.mountPoint))
+            root = get(self, schemaConfig.mountPoint)
+
+            if (isPlainObject(root)) {
+              flatStructure = reduce(flatStructure, function(all, val, key) {
+                all[key.replace(schemaConfig.mountPoint, '').replace(/^\./, '')] = val
+                return all
+              }, {})
+            } else {
+              return root
+            }
+          }
+
+          return reduce(flatStructure, function(all, val, path) {
+            return set(all, path, get(root, path))
+          }, all)
+        }, {})
+      }
+    }, this.$options.methods)
+
     function defineReactives(parent, obj) {
       for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
@@ -180,11 +232,6 @@ var mixin = {
           }
         }
       }
-    }
-
-    function generateDataStructure(self) {
-      var dataStructure = createDataProperties(self.$schema)
-      defineReactives(self, dataStructure)
     }
 
     var normalized = normalizeSchemas(this.$options.schema)
@@ -212,14 +259,16 @@ var mixin = {
         })
       })).then(function(schemaConfigs) {
         self.$schema = schemaConfigs
-        generateDataStructure(self)
+        defineReactives(self, createDataProperties(schemaConfigs))
       })
 
       Vue.util.defineReactive(this, '$schema', allSchemaPromise)
     } else {
       // rewrite schemas normalized
       Vue.util.defineReactive(this, '$schema', normalized)
-      generateDataStructure(this)
+      this.$options.data = Vue.config.optionMergeStrategies.data(function() {
+        return createDataProperties(normalized)
+      }, this.$options.data)
     }
   }
 }
