@@ -370,10 +370,10 @@ export default {
       // functions must return a promise or a schema synchronously
       return fetchSchema('http://example.com/schema-3.json')
     },
-    // load schemas on module require on root
+    // load schemas on module require, default mount point
     fetchSchema('http://example.com/schema-1.json'),
     {
-      //this will fail, since we have async and root mount point
+      //this will throw on init, since we have async and root mount point
       mountPoint: '.',
       schema: fetchSchema('http://example.com/schema-2.json')
     }
