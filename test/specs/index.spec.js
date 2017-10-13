@@ -276,7 +276,11 @@ describe('plugin', function() {
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
         data: function() {
-          return {schema: {conflict: 'original'}}
+          return {
+            schema: {
+              conflict: 'original'
+            }
+          }
         },
         schema: {
           type: 'object',
@@ -948,6 +952,82 @@ describe('plugin', function() {
         })
 
         expect(vm.$v.schema.str.$params.schemaType.type).to.eql('schemaType')
+      })
+
+      it('assumes root is object if no type', function() {
+        var vm = new Vue({
+          mixins: [Vuelidate.validationMixin],
+          schema: {
+            properties: {
+              str: {
+                type: 'string'
+              }
+            },
+            required: ['str']
+          }
+        })
+
+        expect(vm.schema).to.eql({
+          str: ''
+        })
+      })
+
+      // TODO: there seems to be no consensus on if this is correct or not
+      it.skip('if no type on schema, required only applies when object', function() {
+        var vm = new Vue({
+          mixins: [Vuelidate.validationMixin],
+          schema: {
+            properties: {
+              str: {
+                type: 'string'
+              }
+            },
+            required: ['str']
+          }
+        })
+
+        expect(vm.$v.$invalid).to.eql(false)
+        vm.schema = []
+        expect(vm.$v.$invalid).to.eql(false)
+      })
+
+      it('is valid if parent object is not required', function() {
+        var vm = new Vue({
+          mixins: [Vuelidate.validationMixin],
+          schema: {
+            type: 'object',
+            properties: {
+              obj: {
+                type: 'object',
+                properties: {
+                  str: {
+                    type: 'string'
+                  }
+                },
+                required: ['str']
+              }
+            }
+          }
+        })
+
+        expect(vm.$v.$invalid).to.eql(false)
+        // root is required
+        vm.schema = undefined
+        expect(vm.$v.$invalid).to.eql(true)
+        // obj is not required, by extension neither are str
+        vm.schema = {}
+        expect(vm.$v.$invalid).to.eql(false)
+        // obj is required to be object
+        vm.schema = { obj: null }
+        expect(vm.$v.$invalid).to.eql(true)
+        // str is required
+        vm.schema = { obj: {} }
+        expect(vm.$v.$invalid).to.eql(true)
+        // str is required
+        vm.schema = { obj: {str: null} }
+        expect(vm.$v.$invalid).to.eql(true)
+        vm.schema = { obj: {str: ''} }
+        expect(vm.$v.$invalid).to.eql(false)
       })
 
       it('does not add type validator if no type', function() {
@@ -1853,19 +1933,18 @@ describe('plugin', function() {
             }
           })
 
-          // TODO: fix this assertion when https://github.com/monterail/vuelidate/pull/204 is merged
-          // vm.schema.str = undefined
-          // expect(vm.$v.schema.str.$invalid).to.eql(false)
-          // vm.schema.str = null
-          // expect(vm.$v.schema.str.$invalid).to.eql(false)
-          // vm.schema.str = false
-          // expect(vm.$v.schema.str.$invalid).to.eql(false)
-          // vm.schema.str = 1
-          // expect(vm.$v.schema.str.$invalid).to.eql(false)
-          // vm.schema.str = function() {}
-          // expect(vm.$v.schema.str.$invalid).to.eql(false)
-          // vm.schema.str = ''
-          // expect(vm.$v.schema.str.$invalid).to.eql(false)
+          vm.schema.str = undefined
+          expect(vm.$v.schema.str.$invalid).to.eql(false)
+          vm.schema.str = null
+          expect(vm.$v.schema.str.$invalid).to.eql(true)
+          vm.schema.str = false
+          expect(vm.$v.schema.str.$invalid).to.eql(true)
+          vm.schema.str = 1
+          expect(vm.$v.schema.str.$invalid).to.eql(true)
+          vm.schema.str = function() {}
+          expect(vm.$v.schema.str.$invalid).to.eql(true)
+          vm.schema.str = ''
+          expect(vm.$v.schema.str.$invalid).to.eql(true)
 
           vm.schema.str = ['string', 1]
           // adds $each special rule

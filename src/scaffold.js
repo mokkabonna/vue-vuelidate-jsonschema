@@ -35,6 +35,7 @@ function getDefaultValue(schema, isRequired, ignoreDefaultProp) {
 }
 
 function setProperties(base, schema, ignoreDefaultProp, shallow) {
+  if (!base) return
   var additionalScaffoldingSchemas = ['allOf']
   var additionalShallow = ['anyOf', 'oneOf', 'not']
   // set all properties based on default values etc in allOf
@@ -62,6 +63,7 @@ function setProperties(base, schema, ignoreDefaultProp, shallow) {
     Object.keys(schema.properties).forEach(function(key) {
       var innerSchema = schema.properties[key]
       var isRequired = Array.isArray(schema.required) && schema.required.indexOf(key) !== -1
+
       var existing = base[key]
       if (isPlainObject(existing)) {
         base[key] = merge(existing, getDefaultValue(innerSchema, isRequired, ignoreDefaultProp))
@@ -86,7 +88,7 @@ function createDataProperties(schemas, shallow) {
       // scaffold structure
 
       var mountPoint = get(all, schemaConfig.mountPoint)
-      var defValue = getDefaultValue(schemaConfig.schema, true)
+      var defValue = schemaConfig.schema.hasOwnProperty('type') ? getDefaultValue(schemaConfig.schema, true) : {}
 
       if (isPlainObject(mountPoint)) {
         mountPoint = merge(mountPoint, defValue)
@@ -101,6 +103,7 @@ function createDataProperties(schemas, shallow) {
     } else {
       setProperties(all, schemaConfig.schema)
     }
+
     return all
   }, {})
 }

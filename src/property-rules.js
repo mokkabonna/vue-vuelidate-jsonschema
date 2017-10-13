@@ -58,7 +58,7 @@ function impossiblevalidator() {
   return false
 }
 
-function getPropertyValidationRules(propertySchema, isRequired, isAttached, propKey, isRoot) {
+function getPropertyValidationRules(propertySchema, isRequired, isAttached, propKey) {
   var validationObj = {}
 
   // support for boolean schemas
@@ -76,8 +76,9 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
   // add child properties
   if (has('properties')) {
     var req = propertySchema.required || []
-    validationObj = reduce(propertySchema.properties, function(all, propertySchema, propKey) {
-      all[propKey] = getPropertyValidationRules(propertySchema, req.indexOf(propKey) !== -1, isAttached, propKey)
+    validationObj = reduce(propertySchema.properties, function(all, childPropSchema, propKey) {
+      var propRequired = req.indexOf(propKey) !== -1
+      all[propKey] = getPropertyValidationRules(childPropSchema, propRequired, isAttached, propKey)
       return all
     }, validationObj)
   }
