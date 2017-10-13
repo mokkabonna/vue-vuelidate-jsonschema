@@ -4,16 +4,27 @@ var plugin = requireUncached('../../src')
 var Vue = requireUncached('vue')
 var Vuelidate = requireUncached('vuelidate')
 var basic = require('../fixtures/schemas/basic.json')
+var additional = require('../fixtures/schemas/additional.json')
+var additionalWithPattern = require('../fixtures/schemas/additionalWithPattern.json')
 var medium = require('../fixtures/schemas/medium.json')
 var complex = require('../fixtures/schemas/complex.json')
+var complex2 = require('../fixtures/schemas/complex2.json')
 var complex3 = require('../fixtures/schemas/complex3.json')
 var advanced = require('../fixtures/schemas/advanced.json')
 var cosmicrealms = require('../fixtures/schemas/cosmicrealms.json')
 var $RefParser = require('json-schema-ref-parser')
 
-// TODO add additionalProperties validator and include complex2
-// var complex2 = require('../fixtures/schemas/complex2.json')
-var schemas = [basic, medium, complex, complex3, advanced, cosmicrealms]
+var schemas = [
+  additional,
+  additionalWithPattern,
+  basic,
+  medium,
+  complex,
+  complex2,
+  complex3,
+  advanced,
+  cosmicrealms
+]
 var expect = chai.expect
 
 describe('schema fixtures validation', function() {

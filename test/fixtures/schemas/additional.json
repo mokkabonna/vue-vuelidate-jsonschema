@@ -1,0 +1,96 @@
+[{
+  "description": "basic schema testing additional properties",
+  "schema": {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "array",
+    "items": {
+      "title": "Product",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "required": ["id"]
+    }
+  },
+  "tests": [{
+    "description": "valid array",
+    "data": [{
+      "id": 2
+    }, {
+      "id": 3
+    }],
+    "valid": true
+  }, {
+    "description": "not array",
+    "data": 1,
+    "valid": false
+  }, {
+    "description": "array of not onjects",
+    "data": [1, 2, 3],
+    "valid": false
+  }, {
+    "description": "missing required properties",
+    "data": [{}],
+    "valid": false
+  }, {
+    "description": "additional property added",
+    "data": [{
+      "id": 1,
+      "name": null
+    }],
+    "valid": false
+  }]
+}, {
+  "description": "basic schema testing additional properties as schema",
+  "schema": {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "array",
+    "items": {
+      "title": "Product",
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean",
+        "const": true
+      },
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "required": ["id"]
+    }
+  },
+  "tests": [{
+    "description": "valid array",
+    "data": [{
+      "id": 2
+    }, {
+      "id": 3
+    }],
+    "valid": true
+  }, {
+    "description": "additional property added, not boolean",
+    "data": [{
+      "id": 1,
+      "name": null
+    }],
+    "valid": false
+  }, {
+    "description": "additional property added, boolean not true",
+    "data": [{
+      "id": 1,
+      "name": false
+    }],
+    "valid": false
+  }, {
+    "description": "additional property added, boolean VALID",
+    "data": [{
+      "id": 1,
+      "name": true
+    }],
+    "valid": true
+  }]
+}]

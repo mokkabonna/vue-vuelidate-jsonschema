@@ -15,6 +15,7 @@ var minLengthValidator = require('./validators/minLength')
 var multipleOfValidator = require('./validators/multipleOf')
 var patternValidator = require('./validators/pattern')
 var patternPropertiesValidator = require('./validators/patternProperties')
+var additionalPropertiesValidator = require('./validators/additionalProperties')
 var requiredValidator = require('./validators/required')
 var typeValidator = require('./validators/type')
 var typeArrayValidator = require('./validators/typeArray')
@@ -131,6 +132,10 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
 
   if (has('patternProperties')) {
     validationObj.schemaPatternProperties = patternPropertiesValidator(propertySchema, propertySchema.patternProperties, getPropertyValidationRules)
+  }
+
+  if (has('additionalProperties')) {
+    validationObj.schemaAdditionalProperties = additionalPropertiesValidator(propertySchema, propertySchema.additionalProperties, getPropertyValidationRules)
   }
 
   if (has('enum')) {

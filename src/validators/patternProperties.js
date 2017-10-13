@@ -20,7 +20,7 @@ module.exports = function patternPropertiesValidator(propertySchema, patternProp
 
       var allKeysAreValid = Object.keys(object).every(function(key) {
         // we have key, therefore it is valid
-        if (propertySchema.properties[key]) return true
+        if (propertySchema.properties && propertySchema.properties[key]) return true
 
         return allowedKeys.some(function(regexp) {
           return regexp.test(key)
