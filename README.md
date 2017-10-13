@@ -2,7 +2,7 @@
 
 > Create vuelidate validation rules based on json schema
 
-Use the json schemas you already have for validating your api input to generate validation rules for vuelidate. And use default values to generate the data attributes.
+Use the json schemas you already have for validating your api input to generate validation rules for vuelidate. And use default values to generate the data attributes. And title, description for your user interface.
 
 The goal is that if your vuelidate validation is valid then you will also pass validation against the json schema. So you can with confidence serialize your model to json and the server will accept it if it validates against the same schema.
 
