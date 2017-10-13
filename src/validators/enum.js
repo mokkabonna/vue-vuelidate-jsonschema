@@ -1,5 +1,6 @@
 var vuelidate = require('vuelidate')
 var noParamsRequired = require('./noParamsRequired')
+var isEqual = require('lodash/isEqual')
 
 module.exports = function oneOfValidator(propertySchema, choices) {
   return vuelidate.withParams({
@@ -7,6 +8,9 @@ module.exports = function oneOfValidator(propertySchema, choices) {
     choices: choices,
     schema: propertySchema
   }, function(val) {
-    return !noParamsRequired(val) || choices.indexOf(val) !== -1
+    if (!noParamsRequired(val)) return true
+    return choices.some(function(choice) {
+      return isEqual(val, choice)
+    })
   })
 }

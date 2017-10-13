@@ -95,7 +95,9 @@ function createDataProperties(schemas, shallow) {
       }
 
       set(all, schemaConfig.mountPoint, mountPoint)
-      setProperties(get(all, schemaConfig.mountPoint), schemaConfig.schema)
+      if (isPlainObject(mountPoint)) {
+        setProperties(get(all, schemaConfig.mountPoint), schemaConfig.schema)
+      }
     } else {
       setProperties(all, schemaConfig.schema)
     }

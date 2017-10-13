@@ -54,11 +54,32 @@ function createAndValidator(obj) {
   })
 }
 
-function getPropertyValidationRules(propertySchema, isRequired, isAttached, propKey) {
+function impossiblevalidator() {
+  return false
+}
+
+function getPropertyValidationRules(propertySchema, isRequired, isAttached, propKey, isRoot) {
   var validationObj = {}
+
+  // support for boolean schemas
+  if (propertySchema === true) {
+    return validationObj
+  } else if (propertySchema === false) {
+    validationObj.schemaImpossible = impossiblevalidator
+    return validationObj
+  }
 
   function has(name) {
     return propertySchema.hasOwnProperty(name)
+  }
+
+  // add child properties
+  if (has('properties')) {
+    var req = propertySchema.required || []
+    validationObj = reduce(propertySchema.properties, function(all, propertySchema, propKey) {
+      all[propKey] = getPropertyValidationRules(propertySchema, req.indexOf(propKey) !== -1, isAttached, propKey)
+      return all
+    }, validationObj)
   }
 
   if (Array.isArray(propertySchema.type)) {
@@ -79,15 +100,6 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
 
   if (has('not')) {
     validationObj.schemaNot = notValidator(propertySchema, propertySchema.not, getPropertyValidationRules)
-  }
-
-  // add child properties
-  if (has('properties')) {
-    var req = propertySchema.required || []
-    validationObj = reduce(propertySchema.properties, function(all, propertySchema, propKey) {
-      all[propKey] = getPropertyValidationRules(propertySchema, req.indexOf(propKey) !== -1, isAttached, propKey)
-      return all
-    }, validationObj)
   }
 
   if (has('minLength')) {
@@ -150,7 +162,7 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
     validationObj.schemaUniqueItems = uniqueValidator(propertySchema)
   }
 
-  if (has('items') && isPlainObject(propertySchema.items)) {
+  if (has('items') && propertySchema.type === 'array' && isPlainObject(propertySchema.items)) {
     validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true)
   } else if (has('items')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)

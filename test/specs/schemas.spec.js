@@ -2,28 +2,55 @@ var chai = require('chai')
 var requireUncached = require('require-uncached')
 var plugin = requireUncached('../../src')
 var Vue = requireUncached('vue')
-var fs = requireUncached('fs')
-var path = requireUncached('path')
+var fs = require('fs')
+var _ = require('lodash')
+var path = require('path')
 var Vuelidate = requireUncached('vuelidate')
-var glob = requireUncached('glob')
+var glob = require('glob')
 var $RefParser = require('json-schema-ref-parser')
 var expect = chai.expect
 
-var schemas = glob.sync(path.join(__dirname, '../fixtures/schemas/**.json')).map(function(file) {
+// TODO: when this list is empty I think we are pretty much feature complete
+// some of these we have to remove though, as they are invalid, and testing meta functionality
+var todoList = [
+  'additionalItems.json',
+  'contains.json',
+  'definitions.json',
+  'exclusiveMaximum.json',
+  'exclusiveMinimum.json',
+  'definitions.json',
+  'dependencies.json',
+  'maxItems.json',
+  'minItems.json',
+  'properties.json',
+  'propertyNames.json',
+  'ref.json',
+  'refRemote.json',
+  'required.json'
+]
+
+var schemas = glob.sync(path.join(__dirname, '../fixtures/schemas/**.json')).filter(function(file) {
+  return todoList.every(function(exclude) {
+    return file.indexOf(exclude) === -1
+  })
+}).map(function(file) {
   return JSON.parse(fs.readFileSync(file, 'utf-8'))
 })
 
-describe.only('schema fixtures validation', function() {
-  beforeEach(function() {
-    Vue.use(plugin)
-    Vue.use(Vuelidate.Vuelidate)
-
+describe('schema fixtures validation', function() {
+  before(function() {
     return Promise.all(schemas.map(function(innerSchema) {
       return Promise.all(innerSchema.map(function(config) {
-        return $RefParser.dereference(config.schema).then(function(dereferenced) {
-          innerSchema.schema = dereferenced
+        // TODO support boolean schemas
+        if (_.isPlainObject(config.schema)) {
+          return $RefParser.dereference(config.schema).then(function(dereferenced) {
+            innerSchema.schema = dereferenced
+            return innerSchema
+          })
+        } else {
+          innerSchema.schema = config.schema
           return innerSchema
-        })
+        }
       }))
     })).then(function(all) {
       var hasRefStill = JSON.stringify(all.map(function(obj) {
@@ -36,6 +63,11 @@ describe.only('schema fixtures validation', function() {
 
       schemas = all
     })
+  })
+
+  beforeEach(function() {
+    Vue.use(plugin)
+    Vue.use(Vuelidate.Vuelidate)
   })
 
   schemas.forEach(function(schema) {
@@ -56,6 +88,9 @@ describe.only('schema fixtures validation', function() {
             it('is valid according to fixture data', function() {
               vm.mountPoint = test.data
               var isValid = !vm.$v.mountPoint.$invalid
+              if (isValid !== test.valid && true) {
+                console.log(JSON.stringify(vm.$v.mountPoint, null, 2))
+              }
               expect(isValid).to.eql(test.valid)
             })
 

@@ -2,6 +2,7 @@ var vuelidate = require('vuelidate')
 var isPlainObject = require('lodash/isPlainObject')
 var every = require('lodash/every')
 var pullAll = require('lodash/pullAll')
+var isPlainObject = require('lodash/isPlainObject')
 
 function validateGroup(item, validator, key) {
   if (isPlainObject(validator)) {
@@ -22,7 +23,7 @@ module.exports = function additionalPropertiesValidator(propertySchema, addition
     additionalProperties: additionalProperties,
     schema: propertySchema
   }, function(object) {
-    if (!object) return true
+    if (!object || !isPlainObject(object)) return true
     var keys = Object.keys(object)
     var properties = Object.keys(propertySchema.properties || {})
     var additionalKeys

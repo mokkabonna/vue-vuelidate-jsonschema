@@ -114,14 +114,16 @@ var mixin = {
         var self = this
         return reduce(normalizedSchemas, function(all, schema) {
           var root = self
-          var flatStructure = flattenObject(createDataProperties(normalizedSchemas))
+          var data = createDataProperties(normalizedSchemas)
+          var flatStructure = isPlainObject(data) ? flattenObject(data) : {}
           if (schemaConfig.mountPoint !== '.' && !originallyArray) {
-            flatStructure = flattenObject(get(self, schemaConfig.mountPoint))
+            data = get(self, schemaConfig.mountPoint)
+            flatStructure = isPlainObject(data) ? flattenObject(data) : {}
             root = get(self, schemaConfig.mountPoint)
 
             if (isPlainObject(root)) {
               flatStructure = reduce(flatStructure, function(all, val, key) {
-                all[key.replace(schemaConfig.mountPoint, '').replace(/^\./, '')] = val
+                all[String(key).replace(schemaConfig.mountPoint, '').replace(/^\./, '')] = val
                 return all
               }, {})
             } else {
@@ -135,17 +137,6 @@ var mixin = {
         }, {})
       }
     }, this.$options.methods)
-
-    function defineReactives(parent, obj) {
-      for (var prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
-          Vue.util.defineReactive(parent, prop, obj[prop])
-          if (isPlainObject(obj[prop])) {
-            defineReactives(parent[prop], obj[prop])
-          }
-        }
-      }
-    }
 
     var normalized = normalizeSchemas(this.$options.schema)
 

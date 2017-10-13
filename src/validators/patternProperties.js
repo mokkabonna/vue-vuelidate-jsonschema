@@ -10,6 +10,8 @@ module.exports = function patternPropertiesValidator(propertySchema, patternProp
     patternProperties: patternProperties,
     schema: propertySchema
   }, function(object) {
+    if (!isPlainObject(object)) return true
+
     if (propertySchema.additionalProperties !== undefined &&
       !isPlainObject(propertySchema.additionalProperties) &&
       propertySchema.additionalProperties !== true
@@ -48,7 +50,7 @@ module.exports = function patternPropertiesValidator(propertySchema, patternProp
       function validateGroup(item, validator, key) {
         if (isPlainObject(validator)) {
           return every(validator, function(innerValidator, innerKey) {
-            if (item === undefined) return true
+            if (item === undefined || item === null) return true
             return validateGroup(item[key], innerValidator, innerKey)
           })
         } else {
