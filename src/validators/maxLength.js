@@ -1,5 +1,4 @@
 var vuelidate = require('vuelidate')
-var noParamsRequired = require('./noParamsRequired')
 
 module.exports = function maxLengthValidator(propertySchema, max) {
   return vuelidate.withParams({
@@ -7,6 +6,8 @@ module.exports = function maxLengthValidator(propertySchema, max) {
     schema: propertySchema,
     max: max
   }, function(val) {
-    return !noParamsRequired(val) || (val && val.hasOwnProperty('length') && val.length <= max)
+    if (val === undefined) return true
+    if (!val.hasOwnProperty('length')) return true
+    return val.length <= max
   })
 }

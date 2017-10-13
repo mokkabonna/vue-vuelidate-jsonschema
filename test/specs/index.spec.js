@@ -1264,7 +1264,7 @@ describe('plugin', function() {
 
           expect(vm.$v.str.$params.schemaMaxLength.type).to.eql('schemaMaxLength')
           vm.str = ''
-          expect(vm.$v.str.$invalid).to.eql(true)
+          expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = undefined
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = null
