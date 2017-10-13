@@ -657,7 +657,7 @@ describe('plugin', function() {
       })
 
       describe('allOf', function() {
-        it('adds the allOf validator', function() {
+        it('adds all validators, combinding them with vuelidate and validator', function() {
           var vm = new Vue({
             mixins: [Vuelidate.validationMixin],
             schema: {
@@ -672,20 +672,44 @@ describe('plugin', function() {
                     }
                   },
                   required: ['name']
+                },
+                {
+                  type: 'object',
+                  properties: {
+                    name: {
+                      type: 'string',
+                      minLength: 7,
+                      maxLength: 10,
+                      allOf: [{
+                        type: 'string',
+                        minLength: 8
+                      }]
+                    }
+                  },
+                  required: ['name']
                 }
               ]
             }
           })
 
-          expect(vm.$v.$params.schemaAllOf.type).to.eql('schemaAllOf')
           expect(vm.$v.$invalid).to.eql(true)
           // scaffolds the name data property
           expect(vm.hasOwnProperty('name')).to.eql(true)
+          expect(vm.$v.name.hasOwnProperty('schemaMinLength')).to.eql(true)
+          expect(vm.$v.name.hasOwnProperty('schemaMaxLength')).to.eql(true)
+          
           expect(vm.name).to.eql('')
           vm.name = '1234'
           expect(vm.$v.$invalid).to.eql(true)
+          // we add another minLength of 7 so still invalid
           vm.name = '12345'
+          expect(vm.$v.$invalid).to.eql(true)
+          // we add another minLength of 8 so still invalid
+          vm.name = '12345678'
           expect(vm.$v.$invalid).to.eql(false)
+          // finally valid
+          vm.name = '12345678901'
+          expect(vm.$v.$invalid).to.eql(true)
         })
 
         it('adds the allOf validator when string', function() {
@@ -707,7 +731,8 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.name.$params.schemaAllOf.type).to.eql('schemaAllOf')
+          expect(vm.$v.name.$params.schemaType.type).to.eql('and')
+          expect(vm.$v.name.$params.schemaMinLength.type).to.eql('schemaMinLength')
           expect(vm.$v.$invalid).to.eql(false)
           // scaffolds the name data property
           expect(vm.hasOwnProperty('name')).to.eql(true)

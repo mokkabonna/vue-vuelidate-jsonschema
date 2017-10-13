@@ -1,4 +1,4 @@
-var allOfValidator = require('./validators/allOf')
+var validators = require('vuelidate/lib/validators')
 var betweenValidator = require('./validators/between')
 var equalValidator = require('./validators/const')
 var oneOfValidator = require('./validators/oneOf')
@@ -17,6 +17,8 @@ var typeValidator = require('./validators/type')
 var typeArrayValidator = require('./validators/typeArray')
 var uniqueValidator = require('./validators/uniqueItems')
 var reduce = require('lodash/reduce')
+var isFunction = require('lodash/isFunction')
+var isPlainObject = require('lodash/isPlainObject')
 
 function getValidationRulesForObject(objectSchema) {
   return reduce(objectSchema.properties, function(all, propertySchema, propKey) {
@@ -24,6 +26,41 @@ function getValidationRulesForObject(objectSchema) {
     all[propKey] = validationObj
     return all
   }, {})
+}
+  
+function mergeIntoArray(to, from) {
+  var allKeys = Object.keys(to).concat(Object.keys(from))
+  
+  allKeys.forEach(function (key) {
+    var toVal = to[key]
+    var fromVal = from[key]
+
+    if (to.hasOwnProperty(key) && from.hasOwnProperty(key) && isFunction(fromVal)) {
+      to[key] = [].concat(toVal).concat(fromVal)
+    } else if (isPlainObject(toVal) && isPlainObject(fromVal)) {
+      mergeIntoArray(toVal, fromVal)
+    } else if (fromVal) {
+      to[key] = fromVal
+    }
+  })
+}
+
+function mergeValidators(to, schemas) {
+  schemas.forEach(function (schema) {
+    mergeIntoArray(to, getPropertyValidationRules({}, schema))
+  })
+}
+
+function createAndValidator(obj) {
+  Object.keys(obj).forEach(function (key) {
+    // TODO: are array valid in a vuelidate validations config? if so we need a different approach
+    var value = obj[key]
+    if (Array.isArray(value)) {
+      obj[key] = validators.and.apply(null, value)
+    } else if (isPlainObject(value)) {
+      createAndValidator(value)
+    }
+  })
 }
 
 function getPropertyValidationRules(schema, propertySchema, propKey) {
@@ -43,10 +80,6 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
     }))
   } else if(has('type')){
     validationObj.schemaType = typeValidator(propertySchema, propertySchema.type)
-  }
-
-  if (has('allOf')) {
-    validationObj.schemaAllOf = allOfValidator(propertySchema, propertySchema.allOf, getPropertyValidationRules)
   }
 
   if (has('oneOf')) {
@@ -119,6 +152,11 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   } else if (has('items') && is('array')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
+  }
+
+  if (has('allOf')) {
+    mergeValidators(validationObj, propertySchema.allOf)
+    createAndValidator(validationObj)
   }
 
   return validationObj
