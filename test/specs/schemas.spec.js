@@ -2,35 +2,22 @@ var chai = require('chai')
 var requireUncached = require('require-uncached')
 var plugin = requireUncached('../../src')
 var Vue = requireUncached('vue')
+var fs = requireUncached('fs')
+var path = requireUncached('path')
 var Vuelidate = requireUncached('vuelidate')
-var basic = require('../fixtures/schemas/basic.json')
-var additional = require('../fixtures/schemas/additional.json')
-var additionalWithPattern = require('../fixtures/schemas/additionalWithPattern.json')
-var medium = require('../fixtures/schemas/medium.json')
-var complex = require('../fixtures/schemas/complex.json')
-var complex2 = require('../fixtures/schemas/complex2.json')
-var complex3 = require('../fixtures/schemas/complex3.json')
-var advanced = require('../fixtures/schemas/advanced.json')
-var cosmicrealms = require('../fixtures/schemas/cosmicrealms.json')
+var glob = requireUncached('glob')
 var $RefParser = require('json-schema-ref-parser')
-
-var schemas = [
-  additional,
-  additionalWithPattern,
-  basic,
-  medium,
-  complex,
-  complex2,
-  complex3,
-  advanced,
-  cosmicrealms
-]
 var expect = chai.expect
 
-describe('schema fixtures validation', function() {
+var schemas = glob.sync(path.join(__dirname, '../fixtures/schemas/**.json')).map(function(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf-8'))
+})
+
+describe.only('schema fixtures validation', function() {
   beforeEach(function() {
     Vue.use(plugin)
     Vue.use(Vuelidate.Vuelidate)
+
     return Promise.all(schemas.map(function(innerSchema) {
       return Promise.all(innerSchema.map(function(config) {
         return $RefParser.dereference(config.schema).then(function(dereferenced) {
