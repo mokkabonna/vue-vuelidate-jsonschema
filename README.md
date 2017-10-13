@@ -138,7 +138,7 @@ If you have the following schema
 
 We can with confidence also create data properties for **added** and **nodefault**. allOf acts in a way as a extension of the base schema.
 
-However for the **not** validator we don't consider the default values, we always scaffold with undefined as the value. We don't want any default values in a not schema to be filled in, since they are likely to be valid against the not schema, and therefore invalid against the main schema.
+However for the **not, oneOf, anyOf** validators we don't consider the default values, we always scaffold with undefined as the value. We don't want any default values in one of these schemas to be filled in. They are also only scaffolded one level deep. If we didn't do this you would have to use `Vue.set` when adding new properties. Now we create them up front.
 
 ## Supported json schema validation rules
 
