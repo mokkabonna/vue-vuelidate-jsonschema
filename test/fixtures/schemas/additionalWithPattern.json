@@ -1,0 +1,199 @@
+[{
+  "description": "additional properties in combination with patternProperties",
+  "schema": {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "array",
+    "items": {
+      "title": "Product",
+      "type": "object",
+      "patternProperties": {
+        "^abc": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": ["name"]
+        },
+        "^abc(.+)?123$": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "^\\w+\\s\\w+$"
+            }
+          },
+          "required": ["name"]
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "required": ["id"]
+    }
+  },
+  "tests": [{
+    "description": "valid array",
+    "data": [{
+      "id": 2
+    }, {
+      "id": 3
+    }],
+    "valid": true
+  }, {
+    "description": "not array",
+    "data": 1,
+    "valid": false
+  }, {
+    "description": "array of not onjects",
+    "data": [1, 2, 3],
+    "valid": false
+  }, {
+    "description": "missing required properties",
+    "data": [{}],
+    "valid": false
+  }, {
+    "description": "additional property added",
+    "data": [{
+      "id": 1,
+      "name": null
+    }],
+    "valid": false
+  }, {
+    "description": "additional property but matching pattern, but not valid according to pattern schema",
+    "data": [{
+      "id": 1,
+      "abc": null
+    }],
+    "valid": false
+  }, {
+    "description": "additional property but matching pattern, AND valid according to one pattern schema",
+    "data": [{
+      "id": 1,
+      "abc": {
+        "name": "my name"
+      }
+    }],
+    "valid": true
+  }, {
+    "description": "additional property but matching pattern, AND invalid according to one pattern schema",
+    "data": [{
+      "id": 1,
+      "abc123": {
+        "name": "John"
+      }
+    }],
+    "valid": false
+  }, {
+    "description": "additional property but matching pattern, AND valid according to two pattern schemas",
+    "data": [{
+      "id": 1,
+      "abc----123": {
+        "name": "John Peterson"
+      }
+    }],
+    "valid": true
+  }]
+}, {
+  "description": "additional properties in combination with patternProperties as schema",
+  "schema": {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "array",
+    "items": {
+      "title": "Product",
+      "type": "object",
+      "patternProperties": {
+        "^abc": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": ["name"]
+        },
+        "^abc(.+)?123$": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "^\\w+\\s\\w+$"
+            }
+          },
+          "required": ["name"]
+        }
+      },
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 10
+      },
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "required": ["id"]
+    }
+  },
+  "tests": [{
+    "description": "valid array",
+    "data": [{
+      "id": 2
+    }, {
+      "id": 3
+    }],
+    "valid": true
+  }, {
+    "description": "additional property added, not matching pattern or additionalProperties",
+    "data": [{
+      "id": 1,
+      "name": null
+    }],
+    "valid": false
+  }, {
+    "description": "additional property added, AND additionalProperties matching",
+    "data": [{
+      "id": 1,
+      "name": 10
+    }],
+    "valid": true
+  }, {
+    "description": "additional property but matching pattern, but not valid according to pattern schema",
+    "data": [{
+      "id": 1,
+      "abc": null
+    }],
+    "valid": false
+  }, {
+    "description": "additional property but matching pattern, AND valid according to one pattern schema",
+    "data": [{
+      "id": 1,
+      "abc": {
+        "name": "my name"
+      }
+    }],
+    "valid": true
+  }, {
+    "description": "additional property but matching pattern, AND invalid according to one pattern schema",
+    "data": [{
+      "id": 1,
+      "abc123": {
+        "name": "John"
+      }
+    }],
+    "valid": false
+  }, {
+    "description": "additional property but matching pattern, AND valid according to two pattern schemas",
+    "data": [{
+      "id": 1,
+      "abc----123": {
+        "name": "John Peterson"
+      }
+    }],
+    "valid": true
+  }]
+}]

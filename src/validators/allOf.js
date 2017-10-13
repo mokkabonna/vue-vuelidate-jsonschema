@@ -20,7 +20,7 @@ module.exports = function allOfValidator(propertySchema, schemas, getPropertyVal
     }
 
     var validatorGroups = schemas.map(function(itemSchema) {
-      return getPropertyValidationRules(propertySchema, itemSchema)
+      return getPropertyValidationRules(itemSchema)
     })
 
     function validateGroup(item, validator, key) {

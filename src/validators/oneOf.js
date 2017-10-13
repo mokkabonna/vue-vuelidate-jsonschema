@@ -20,7 +20,7 @@ module.exports = function oneOfValidator(propertySchema, schemas, getPropertyVal
     }
 
     var validatorGroups = schemas.map(function(itemSchema) {
-      return getPropertyValidationRules(propertySchema, itemSchema)
+      return getPropertyValidationRules(itemSchema)
     })
 
     function validateGroup(item, validator, key) {
@@ -43,7 +43,7 @@ module.exports = function oneOfValidator(propertySchema, schemas, getPropertyVal
     })
 
     var matching = validationForGroups.filter(function(validatorGroup) {
-      //TODO exit early if more than one
+      // TODO exit early if more than one
       return validatorGroup(val)
     })
 

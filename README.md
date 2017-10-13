@@ -10,6 +10,7 @@ The goal is that if your vuelidate validation is valid then you will also pass v
 npm install vue-vuelidate-jsonschema --save
 ```
 
+
 ## Install plugin globally
 
 NOTE: if using this plugin as a global mixin, make sure to use it **before** you register Vuelidate.
@@ -137,24 +138,30 @@ However for the **not** validator we don't consider the default values, we alway
 
 ## Supported json schema validation rules
 
-- allOf => schemaAllOf
-- anyOf => schemaAnyOf
-- const => schemaConst
-- enum => schemaEnum
-- items => schemaItems, if items is a schema of type object, the $each property is also used
-- maximum => schemaMaximum
-- maxItems => schemaMaxItems (note that the name of the validator is schemaMaxItems, but the type of the validator itself is schemaMaxLength)
-- maxLength => schemaMaxLength
-- minimum => schemaMinimum
-- minItems => schemaMinItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
-- minLength => schemaMinLength
-- multipleOf => schemaMultipleOf
-- not => schemaNot
-- oneOf => schemaOneOf
-- pattern => schemaPattern
-- required => schemaRequired
+Validators are attached with the prefix schema. So required => schemaRequired
+
+- additionalProperties
+- allOf this does not add a validator, but it generates validators for all the provided schemas in allOf and merges them using the **and** validator. The individual validators are still added as schemaMinLength etc. But if more schemaMinLength for a property they are combined.
+- anyOf
+- const
+- enum
+- items, if items is a schema of type object, the $each property is also used
+- maximum
+- maxItems (note that the name of the validator is schemaMaxItems, but the type of the validator itself is schemaMaxLength)
+- maxLength
+- maxProperties
+- minimum
+- minItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
+- minLength
+- minProperties
+- multipleOf
+- not
+- oneOf
+- pattern
+- patternProperties
+- required
 - type => schemaType, if array of types then schemaTypes
-- uniqueItems => schemaUniqueItems
+- uniqueItems
 
 The plan is to support all rules. PR's are welcome.
 
@@ -185,6 +192,10 @@ The schema for the property and any params are passed to all the validators and 
 ```
 
 This can be used to generate validation messages.
+
+### patternProperties and additionalProperties
+
+You can't have patternProperties on a schema mounted to root. And additionalProperties must be `undefined` or `true`. This is because you will likely run into problems since the vue instance have many extra properties. In these cases, use a mount point.
 
 ### Items and $each validation
 
@@ -378,6 +389,15 @@ You need to use a `v-if` in your view to prevent the view from failing if you tr
 
 If one of your schemas contain a $ref property you can then resolve those manually in the promise or use [json-schema-ref-parser](https://github.com/BigstickCarpet/json-schema-ref-parser) to dereference your schema for you.
 
+## Extract data
+
+The mixin adds a method getSchemaData that you can call to get all the data that a schema originally helped scaffold.
+
+```js
+vm.getSchemaData(vm.$schema[0])
+```
+
+This will include any property that is undefined, but you will get rid of them when you do `JSON.stringify()`. For schema at a mountpoint, you will get only the structure from that mountpoint. But if you have mounted several schemas on the same mountpoint or below you will get those included. If you call `getSchemaData` with an array of schemas you will always get a fully structured export from the root of your vm. Since you might have different schemas on different mountpoints.
 
 ## vuelidate error extractor
 
@@ -401,6 +421,7 @@ Vue.use(VuelidateErrorExtractor, {
 - [x] support $ref inside schemas (will not support, but added docs for resolving refs with third party module)
 - [ ] export own validators
 - [ ] more tests for really complex schemas
+- [ ] scaffold data, populate, serialize and test output against mainstream json schema validator (ajv)
 - [x] document and test mounting procedure (multiple schemas in one vm)
 - [ ] possibly support and test circular $refs
 - [ ] better validation params for array items validation (when not object)

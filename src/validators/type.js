@@ -25,6 +25,7 @@ module.exports = function typeValidator(propertySchema, type) {
     jsonType: type,
     schema: propertySchema
   }, function(val) {
+    if (!type) return true
     return !noParamsRequired(val) || jsonTypes[type](val)
   })
 }
