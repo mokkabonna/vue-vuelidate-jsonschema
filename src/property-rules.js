@@ -41,12 +41,6 @@ function mergeIntoArray(to, from) {
   })
 }
 
-function mergeValidators(to, schemas) {
-  schemas.forEach(function(schema) {
-    mergeIntoArray(to, getPropertyValidationRules({}, schema))
-  })
-}
-
 function createAndValidator(obj) {
   Object.keys(obj).forEach(function(key) {
     // TODO: are array valid in a vuelidate validations config? if so we need a different approach
@@ -152,7 +146,7 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
   }
 
   if (has('items') && isPlainObject(propertySchema.items)) {
-    validationObj.$each = getPropertyValidationRules(propertySchema.items, true, isAttached)
+    validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true)
   } else if (has('items')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   }
@@ -162,7 +156,10 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
   }
 
   if (has('allOf')) {
-    mergeValidators(validationObj, propertySchema.allOf)
+    propertySchema.allOf.forEach(function(schema) {
+      mergeIntoArray(validationObj, getPropertyValidationRules(schema, false, isAttached))
+    })
+
     createAndValidator(validationObj)
   }
 

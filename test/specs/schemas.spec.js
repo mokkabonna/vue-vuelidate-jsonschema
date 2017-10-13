@@ -16,7 +16,7 @@ var $RefParser = require('json-schema-ref-parser')
 var schemas = [basic, medium, complex, complex3, advanced, cosmicrealms]
 var expect = chai.expect
 
-describe('schema fixtures valiation', function() {
+describe('schema fixtures validation', function() {
   beforeEach(function() {
     Vue.use(plugin)
     Vue.use(Vuelidate.Vuelidate)
@@ -55,7 +55,7 @@ describe('schema fixtures valiation', function() {
 
         innerSchema.tests.forEach(function(test) {
           describe(test.description, function() {
-            it('is valid accoring to fixture data', function() {
+            it('is valid according to fixture data', function() {
               vm.mountPoint = test.data
               var isValid = !vm.$v.mountPoint.$invalid
               expect(isValid).to.eql(test.valid)
