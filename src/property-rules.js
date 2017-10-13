@@ -1,29 +1,31 @@
-var validators = require('vuelidate/lib/validators')
-var betweenValidator = require('./validators/between')
-var equalValidator = require('./validators/const')
-var oneOfValidator = require('./validators/oneOf')
-var anyOfValidator = require('./validators/anyOf')
-var notValidator = require('./validators/not')
-var enumValidator = require('./validators/enum')
-var itemsValidator = require('./validators/items')
-var maxValidator = require('./validators/maximum')
-var maxPropertiesValidator = require('./validators/maxProperties')
-var minPropertiesValidator = require('./validators/minProperties')
-var maxLengthValidator = require('./validators/maxLength')
-var minValidator = require('./validators/minimum')
-var minLengthValidator = require('./validators/minLength')
-var multipleOfValidator = require('./validators/multipleOf')
-var patternValidator = require('./validators/pattern')
-var patternPropertiesValidator = require('./validators/patternProperties')
 var additionalPropertiesValidator = require('./validators/additionalProperties')
-var requiredValidator = require('./validators/required')
-var typeValidator = require('./validators/type')
-var typeArrayValidator = require('./validators/typeArray')
-var uniqueValidator = require('./validators/uniqueItems')
-var uniq = require('lodash/uniq')
-var reduce = require('lodash/reduce')
+var anyOfValidator = require('./validators/anyOf')
+var betweenValidator = require('./validators/between')
+var enumValidator = require('./validators/enum')
+var equalValidator = require('./validators/const')
 var isFunction = require('lodash/isFunction')
 var isPlainObject = require('lodash/isPlainObject')
+var itemsValidator = require('./validators/items')
+var maxItemsValidator = require('./validators/maxItems')
+var maxLengthValidator = require('./validators/maxLength')
+var maxPropertiesValidator = require('./validators/maxProperties')
+var maxValidator = require('./validators/maximum')
+var minItemsValidator = require('./validators/minItems')
+var minLengthValidator = require('./validators/minLength')
+var minPropertiesValidator = require('./validators/minProperties')
+var minValidator = require('./validators/minimum')
+var multipleOfValidator = require('./validators/multipleOf')
+var notValidator = require('./validators/not')
+var oneOfValidator = require('./validators/oneOf')
+var patternPropertiesValidator = require('./validators/patternProperties')
+var patternValidator = require('./validators/pattern')
+var reduce = require('lodash/reduce')
+var requiredValidator = require('./validators/required')
+var typeArrayValidator = require('./validators/typeArray')
+var typeValidator = require('./validators/type')
+var uniq = require('lodash/uniq')
+var uniqueValidator = require('./validators/uniqueItems')
+var validators = require('vuelidate/lib/validators')
 
 function mergeIntoArray(to, from) {
   var allKeys = uniq(Object.keys(to).concat(Object.keys(from)))
@@ -116,11 +118,11 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
   }
 
   if (has('minItems')) {
-    validationObj.schemaMinItems = minLengthValidator(propertySchema, propertySchema.minItems)
+    validationObj.schemaMinItems = minItemsValidator(propertySchema, propertySchema.minItems)
   }
 
   if (has('maxItems')) {
-    validationObj.schemaMaxItems = maxLengthValidator(propertySchema, propertySchema.maxItems)
+    validationObj.schemaMaxItems = maxItemsValidator(propertySchema, propertySchema.maxItems)
   }
 
   if (has('minimum') && has('maximum')) {

@@ -1,4 +1,5 @@
 var vuelidate = require('vuelidate')
+var isString = require('lodash/isString')
 
 module.exports = function minLengthValidator(propertySchema, min) {
   return vuelidate.withParams({
@@ -6,8 +7,7 @@ module.exports = function minLengthValidator(propertySchema, min) {
     schema: propertySchema,
     min: min
   }, function(val) {
-    if (val === undefined) return true
-    if (!val.hasOwnProperty('length')) return true
+    if (!isString(val)) return true
     return val.length >= min
   })
 }

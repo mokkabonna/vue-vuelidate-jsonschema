@@ -20,8 +20,6 @@ var todoList = [
   'exclusiveMinimum.json',
   'definitions.json',
   'dependencies.json',
-  'maxItems.json', // fails since we use same validator for string
-  'minItems.json', // fails since we use same validator for string
   'properties.json',
   'propertyNames.json',
   'ref.json',
@@ -37,7 +35,7 @@ var schemas = glob.sync(path.join(__dirname, '../fixtures/schemas/**.json')).fil
   return JSON.parse(fs.readFileSync(file, 'utf-8'))
 })
 
-describe.only('schema fixtures validation', function() {
+describe('schema fixtures validation', function() {
   before(function() {
     return Promise.all(schemas.map(function(innerSchema) {
       return Promise.all(innerSchema.map(function(config) {

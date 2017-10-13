@@ -1544,7 +1544,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.schema.str.$params.schemaMinItems.type).to.eql('schemaMinLength')
+          expect(vm.$v.schema.str.$params.schemaMinItems.type).to.eql('schemaMinItems')
 
           vm.schema.str = null
           expect(vm.$v.schema.str.$invalid).to.eql(true)
@@ -1574,7 +1574,7 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.schema.str.$params.schemaMaxItems.type).to.eql('schemaMaxLength')
+          expect(vm.$v.schema.str.$params.schemaMaxItems.type).to.eql('schemaMaxItems')
 
           vm.schema.str = null
           expect(vm.$v.schema.str.$invalid).to.eql(true)

@@ -151,11 +151,11 @@ Validators are attached with the prefix schema. So required => schemaRequired
 - enum
 - items, if items is a schema of type object, the $each property is also used
 - maximum
-- maxItems (note that the name of the validator is schemaMaxItems, but the type of the validator itself is schemaMaxLength)
+- maxItems
 - maxLength
 - maxProperties
 - minimum
-- minItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
+- minItems
 - minLength
 - minProperties
 - multipleOf
