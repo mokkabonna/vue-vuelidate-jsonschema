@@ -27,10 +27,17 @@ var todoList = [
   'required.json'
 ]
 
+// set this to some part of filename to only run one file
+var onlyRun = ''
+
 var schemas = glob.sync(path.join(__dirname, '../fixtures/schemas/**.json')).filter(function(file) {
-  return todoList.every(function(exclude) {
-    return file.indexOf(exclude) === -1
-  })
+  if (onlyRun.length) {
+    return file.indexOf(onlyRun) !== -1
+  } else {
+    return todoList.every(function(exclude) {
+      return file.indexOf(exclude) === -1
+    })
+  }
 }).map(function(file) {
   return JSON.parse(fs.readFileSync(file, 'utf-8'))
 })

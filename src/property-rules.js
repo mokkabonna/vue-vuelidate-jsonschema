@@ -169,8 +169,7 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
     validationObj.schemaUniqueItems = uniqueValidator(propertySchema)
   }
 
-  // TODO we can't check statically for type, EVER
-  if (has('items') && propertySchema.type === 'array' && isPlainObject(propertySchema.items)) {
+  if (has('items') && isPlainObject(propertySchema.items)) {
     validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true)
   } else if (has('items')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)

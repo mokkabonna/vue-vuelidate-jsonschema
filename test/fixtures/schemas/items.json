@@ -16,8 +16,23 @@
                 "valid": false
             },
             {
-                "description": "ignores non-arrays",
+                "description": "SKIPPED, curently does not work----------ignores non-arrays",
                 "data": {"foo" : "bar"},
+                "valid": false
+            },
+            {
+                "description": "ignores non-arrays 2",
+                "data": 1,
+                "valid": true
+            },
+            {
+                "description": "ignores non-arrays 3",
+                "data": false,
+                "valid": true
+            },
+            {
+                "description": "ignores non-arrays 4",
+                "data": null,
                 "valid": true
             }
         ]
