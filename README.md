@@ -73,21 +73,25 @@ import {pattern} from 'vue-vuelidate-jsonschema'
 export default {
   data() {
     return {
-      name: undefined,
-      username: '',
-      age: 20
+      schema: {
+        name: undefined,
+        username: '',
+        age: 20
+      }
     }
   },
   validations: {
-    name: {
-      pattern: pattern('^\\w+\s\\w+$')
-    },
-    username: {
-      required,
-      minLength: minLength(5)
-    },
-    age: {
-      between: between(18, 30)
+    schema: {
+      name: {
+        pattern: pattern('^\\w+\s\\w+$')
+      },
+      username: {
+        required,
+        minLength: minLength(5)
+      },
+      age: {
+        between: between(18, 30)
+      }
     }
   }
 }
@@ -269,10 +273,12 @@ export default {
     }
   },
   validations: {
-    name: {
-      schemaMinLength: minLength(2), //overrides minLength 5
-      email, // adds email validator
-      schemaMaxLength: undefined // removes maxlength validator
+    schema: {
+      name: {
+        schemaMinLength: minLength(2), //overrides minLength 5
+        email, // adds email validator
+        schemaMaxLength: undefined // removes maxlength validator
+      }
     }
   }
 }
@@ -320,7 +326,7 @@ In the above example, the conflict property will still have the minLength valida
 
 ## Custom mount point
 
-By default the schemas are added to the root data/validation structure. To attach them deeper down in the structure you can define a mount point:
+By default the schemas are added to the **schema** property/validation structure. To attach them deeper down in the structure you can define a mount point:
 
 ```js
 export default {
@@ -350,6 +356,8 @@ export default {
 
 This exposes prop1 at **vm.deep.nested.structure.prop1** and prop2 at **vm.other.deep.structure.prop2**
 
+You **can** mount a schema to root by defining `mountPoint: '.'`. This is however not supported with async schemas, since we can't add reactive properties to the vue instance after init. Also sibling validators like additionalProperties or patternProperties makes little sense when added to the root as the root is full of additional vue properties.
+
 
 ## Loading async schemas
 
@@ -358,20 +366,15 @@ Promises and functions are supported, just define your schema like this:
 ```js
 export default {
   schema: [
-    {
-      mountPoint: 'form1',
-      schema: function loadSchemaOnCreate() {
-        // functions must return a promise or a schema synchronously
-        return fetchSchema('http://example.com/schema-3.json')
-      }
+    function loadSchemaOnCreate() {
+      // functions must return a promise or a schema synchronously
+      return fetchSchema('http://example.com/schema-3.json')
     },
     // load schemas on module require on root
-    // will fail unless it returns synchronously, since we can't scaffold new properties to the
-    // vue instance after init. use a mount point.
     fetchSchema('http://example.com/schema-1.json'),
-    //this works
     {
-      mountPoint: 'form2', //mounts to form2 property
+      //this will fail, since we have async and root mount point
+      mountPoint: '.',
       schema: fetchSchema('http://example.com/schema-2.json')
     }
   ]

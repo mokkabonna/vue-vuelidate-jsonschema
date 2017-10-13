@@ -34,7 +34,7 @@ function normalizeSchemas(schemaConfig) {
       if (config.mountPoint) {
         return config
       } else {
-        return {mountPoint: '.', schema: config}
+        return {mountPoint: 'schema', schema: config}
       }
     })
   } else {
@@ -43,7 +43,7 @@ function normalizeSchemas(schemaConfig) {
     } else {
       return [
         {
-          mountPoint: '.',
+          mountPoint: 'schema',
           schema: schemaConfig
         }
       ]
