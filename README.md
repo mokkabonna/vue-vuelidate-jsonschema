@@ -138,27 +138,30 @@ However for the **not** validator we don't consider the default values, we alway
 
 ## Supported json schema validation rules
 
-- allOf => schemaAllOf
-- anyOf => schemaAnyOf
-- const => schemaConst
-- enum => schemaEnum
-- items => schemaItems, if items is a schema of type object, the $each property is also used
-- maximum => schemaMaximum
-- maxItems => schemaMaxItems (note that the name of the validator is schemaMaxItems, but the type of the validator itself is schemaMaxLength)
-- maxLength => schemaMaxLength
-- maxProperties => schemaMaxProperties
-- minimum => schemaMinimum
-- minItems => schemaMinItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
-- minLength => schemaMinLength
-- minProperties => schemaMinProperties
-- multipleOf => schemaMultipleOf
-- not => schemaNot
-- oneOf => schemaOneOf
-- pattern => schemaPattern
-- patternProperties => schemaPatternProperties
-- required => schemaRequired
+Validators are attached with the prefix schema. So required => schemaRequired
+
+- additionalProperties
+- allOf this does not add a validator, but it generates validators for all the provided schemas in allOf and merges them using the **and** validator. The individual validators are still added as schemaMinLength etc. But if more schemaMinLength for a property they are combined.
+- anyOf
+- const
+- enum
+- items, if items is a schema of type object, the $each property is also used
+- maximum
+- maxItems (note that the name of the validator is schemaMaxItems, but the type of the validator itself is schemaMaxLength)
+- maxLength
+- maxProperties
+- minimum
+- minItems (note that the name of the validator is schemaMinItems, but the type of the validator itself is schemaMinLength)
+- minLength
+- minProperties
+- multipleOf
+- not
+- oneOf
+- pattern
+- patternProperties
+- required
 - type => schemaType, if array of types then schemaTypes
-- uniqueItems => schemaUniqueItems
+- uniqueItems
 
 The plan is to support all rules. PR's are welcome.
 
