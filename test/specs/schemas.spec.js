@@ -27,7 +27,7 @@ var schemas = [
 ]
 var expect = chai.expect
 
-describe.skip('schema fixtures validation', function() {
+describe('schema fixtures validation', function() {
   beforeEach(function() {
     Vue.use(plugin)
     Vue.use(Vuelidate.Vuelidate)

@@ -28,7 +28,9 @@ function getDefaultValue(schema, isRequired, ignoreDefaultProp) {
     return undefined
   } else {
     var defaultValue = defaultValues[schema.type]
-    return isFunction(defaultValue) ? defaultValue() : defaultValue
+    return isFunction(defaultValue)
+      ? defaultValue()
+      : defaultValue
   }
 }
 
@@ -73,8 +75,13 @@ function setProperties(base, schema, ignoreDefaultProp, shallow) {
   }
 }
 
-function createDataProperties(schemas) {
+function createDataProperties(schemas, shallow) {
   return reduce(schemas, function(all, schemaConfig) {
+    if (shallow) {
+      set(all, schemaConfig.mountPoint, undefined)
+      return all
+    }
+
     if (schemaConfig.mountPoint !== '.') {
       // scaffold structure
 

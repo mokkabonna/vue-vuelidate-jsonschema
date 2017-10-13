@@ -177,16 +177,20 @@ var mixin = {
           return newConfig
         })
       })).then(function(schemaConfigs) {
+        // reactivity is already set up, we can just replace properties
         self.$schema = schemaConfigs
-        defineReactives(self, createDataProperties(schemaConfigs))
+        Object.assign(self, createDataProperties(schemaConfigs))
       })
 
       Vue.util.defineReactive(this, '$schema', allSchemaPromise)
+      this.$options.data = Vue.config.optionMergeStrategies.data(function() {
+        return createDataProperties(calledSchemas, true)
+      }, this.$options.data)
     } else {
       // rewrite schemas normalized
-      Vue.util.defineReactive(this, '$schema', normalized)
+      Vue.util.defineReactive(this, '$schema', calledSchemas)
       this.$options.data = Vue.config.optionMergeStrategies.data(function() {
-        return createDataProperties(normalized)
+        return createDataProperties(calledSchemas)
       }, this.$options.data)
     }
   }
