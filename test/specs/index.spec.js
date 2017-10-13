@@ -48,7 +48,7 @@ describe('plugin', function() {
 
   describe('mixin', function() {
     it('exposes mixin', function() {
-      expect(plugin.mixin).to.have.keys(['beforeCreate'])
+      expect(plugin.mixin).to.have.keys(['beforeCreate', 'inject'])
     })
 
     it('works as a local mixin', function() {
