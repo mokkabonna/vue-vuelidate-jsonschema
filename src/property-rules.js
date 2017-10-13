@@ -16,6 +16,7 @@ var requiredValidator = require('./validators/required')
 var typeValidator = require('./validators/type')
 var typeArrayValidator = require('./validators/typeArray')
 var uniqueValidator = require('./validators/uniqueItems')
+var uniq = require('lodash/uniq')
 var reduce = require('lodash/reduce')
 var isFunction = require('lodash/isFunction')
 var isPlainObject = require('lodash/isPlainObject')
@@ -29,7 +30,7 @@ function getValidationRulesForObject(objectSchema) {
 }
   
 function mergeIntoArray(to, from) {
-  var allKeys = Object.keys(to).concat(Object.keys(from))
+  var allKeys = uniq(Object.keys(to).concat(Object.keys(from)))
   
   allKeys.forEach(function (key) {
     var toVal = to[key]
