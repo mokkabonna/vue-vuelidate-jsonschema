@@ -41,7 +41,7 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
     validationObj.schemaTypes = typeArrayValidator(propertySchema, propertySchema.type.map(function(type) {
       return typeValidator(propertySchema, type)
     }))
-  } else {
+  } else if(has('type')){
     validationObj.schemaType = typeValidator(propertySchema, propertySchema.type)
   }
 

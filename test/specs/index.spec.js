@@ -48,7 +48,7 @@ describe('plugin', function() {
 
   describe('mixin', function() {
     it('exposes mixin', function() {
-      expect(plugin.mixin).to.have.keys(['beforeCreate'])
+      expect(plugin.mixin).to.have.keys(['beforeCreate', 'inject'])
     })
 
     it('works as a local mixin', function() {
@@ -607,6 +607,22 @@ describe('plugin', function() {
         })
 
         expect(vm.$v.str.$params.schemaType.type).to.eql('schemaType')
+      })
+
+      it('does not add type validator if no type', function() {
+        var vm = new Vue({
+          mixins: [Vuelidate.validationMixin],
+          schema: {
+            type: 'object',
+            properties: {
+              str: {
+                
+              }
+            }
+          }
+        })
+
+        expect(vm.$v.str.$params.schemaType).to.eql(undefined)
       })
 
       it('validates type array', function() {
