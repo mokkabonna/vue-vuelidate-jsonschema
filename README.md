@@ -26,6 +26,7 @@ Vue.use(VueVuelidateJsonschema)
 Vue.use(Vuelidate)
 ```
 
+
 ## Local mixin
 
 You can use the local mixin like this:
