@@ -69,7 +69,7 @@ function generateValidationSchema(schemas) {
     }
 
     if (!(schemaConfig.schema.additionalProperties === true || schemaConfig.schema.additionalProperties === undefined)) {
-      throw new Error('Schema with id ' + schemaConfig.schema.id + ' has sibling validators additionalProperties not equal to true. This is not supported when mounting on root. Since there are lots of extra properties on a vue instance.')
+      throw new Error('Schema with id ' + schemaConfig.schema.id + ' has sibling validators additionalProperties not equal to true or undefined. This is not supported when mounting on root. Since there are lots of extra properties on a vue instance.')
     }
   })
 

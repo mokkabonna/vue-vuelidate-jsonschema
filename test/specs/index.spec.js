@@ -1051,7 +1051,7 @@ describe('plugin', function() {
 
           expect(vm.$v.$params.schemaOneOf.type).to.eql('schemaOneOf')
           expect(vm.hasOwnProperty('name')).to.eql(true)
-          expect(vm.name).to.eql('')
+          expect(vm.name).to.eql(undefined)
           expect(vm.$v.$invalid).to.eql(true)
           // scaffolds the name data property
           vm.name = '1234'
@@ -1114,7 +1114,7 @@ describe('plugin', function() {
 
           expect(vm.$v.$params.schemaAnyOf.type).to.eql('schemaAnyOf')
           expect(vm.hasOwnProperty('name')).to.eql(true)
-          expect(vm.name).to.eql('')
+          expect(vm.name).to.eql(undefined)
           expect(vm.$v.$invalid).to.eql(true)
           // scaffolds the name data property
           vm.name = '1234'

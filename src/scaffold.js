@@ -32,9 +32,9 @@ function getDefaultValue(schema, isRequired, ignoreDefaultProp) {
   }
 }
 
-function setProperties(base, schema, ignoreDefaultProp) {
-  var additionalScaffoldingSchemas = ['oneOf', 'anyOf', 'allOf']
-  var additionalNonDefault = ['not']
+function setProperties(base, schema, ignoreDefaultProp, shallow) {
+  var additionalScaffoldingSchemas = ['allOf']
+  var additionalShallow = ['anyOf', 'oneOf', 'not']
   // set all properties based on default values etc in allOf
 
   additionalScaffoldingSchemas.forEach(function(prop) {
@@ -45,13 +45,13 @@ function setProperties(base, schema, ignoreDefaultProp) {
     }
   })
 
-  additionalNonDefault.forEach(function(prop) {
+  additionalShallow.forEach(function(prop) {
     if (Array.isArray(schema[prop])) {
       schema[prop].forEach(function(subSchema) {
-        setProperties(base, subSchema, true)
+        setProperties(base, subSchema, true, true)
       })
     } else if (isPlainObject(schema[prop])) {
-      setProperties(base, schema[prop], true)
+      setProperties(base, schema[prop], true, true)
     }
   })
 
@@ -66,7 +66,7 @@ function setProperties(base, schema, ignoreDefaultProp) {
       } else {
         base[key] = getDefaultValue(innerSchema, isRequired, ignoreDefaultProp)
       }
-      if (innerSchema.type === 'object' && innerSchema.properties) {
+      if (!shallow && innerSchema.type === 'object' && innerSchema.properties) {
         setProperties(base[key], innerSchema, ignoreDefaultProp)
       }
     })
