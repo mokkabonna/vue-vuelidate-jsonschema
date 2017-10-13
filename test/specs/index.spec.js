@@ -97,12 +97,37 @@ describe('plugin', function() {
 
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
-        schema: schemaPromise
+        schema: {
+          mountPoint: 'schema',
+          schema: schemaPromise
+        }
       })
 
       return vm.$schema.then(function() {
-        expect(vm.prop1).to.eql('123')
+        expect(vm.schema.prop1).to.eql('123')
       })
+    })
+
+    it('throws if root mount point and async', function() {
+      var schemaPromise = new Promise(function(resolve) {
+        resolve({
+          type: 'object',
+          properties: {
+            prop1: {
+              type: 'string',
+              minLength: 3,
+              default: '123'
+            }
+          }
+        })
+      })
+
+      expect(function() {
+        return new Vue({
+          mixins: [Vuelidate.validationMixin],
+          schema: schemaPromise
+        })
+      }).to.throw(/not supported/)
     })
 
     it('supports awaiting awaiting multiple promises', function() {
@@ -134,18 +159,26 @@ describe('plugin', function() {
 
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
-        schema: [schemaPromise, promise2]
+        schema: [
+          {
+            mountPoint: 'schema',
+            schema: schemaPromise
+          }, {
+            mountPoint: 'schema',
+            schema: promise2
+          }
+        ]
       })
 
       return vm.$schema.then(function() {
-        expect(vm.prop1).to.eql('123')
-        expect(vm.$v.prop1.$invalid).to.eql(false)
-        vm.prop1 = '12'
-        expect(vm.$v.prop1.$invalid).to.eql(true)
-        expect(vm.prop2).to.eql('abc')
-        expect(vm.$v.prop2.$invalid).to.eql(true)
-        vm.prop2 = '1234567'
-        expect(vm.$v.prop2.$invalid).to.eql(false)
+        expect(vm.schema.prop1).to.eql('123')
+        expect(vm.$v.schema.prop1.$invalid).to.eql(false)
+        vm.schema.prop1 = '12'
+        expect(vm.$v.schema.prop1.$invalid).to.eql(true)
+        expect(vm.schema.prop2).to.eql('abc')
+        expect(vm.$v.schema.prop2.$invalid).to.eql(true)
+        vm.schema.prop2 = '1234567'
+        expect(vm.$v.schema.prop2.$invalid).to.eql(false)
       })
     })
 
@@ -169,10 +202,15 @@ describe('plugin', function() {
         })
       }
 
-      var vm = new Vue({schema: fetchSchema})
+      var vm = new Vue({
+        schema: {
+          mountPoint: 'schema',
+          schema: fetchSchema
+        }
+      })
 
       return vm.$schema.then(function() {
-        expect(vm.prop1).to.eql('123')
+        expect(vm.schema.prop1).to.eql('123')
         expect(callCount).to.eql(1)
       })
     })
@@ -195,11 +233,19 @@ describe('plugin', function() {
 
       var vm = new Vue({
         mixins: [Vuelidate.validationMixin],
-        schema: [fetchSchema, fetchSchema]
+        schema: [
+          {
+            mountPoint: 'form',
+            schema: fetchSchema
+          }, {
+            mountPoint: 'form',
+            schema: fetchSchema
+          }
+        ]
       })
 
       return vm.$schema.then(function() {
-        expect(vm.prop1).to.eql('123')
+        expect(vm.form.prop1).to.eql('123')
       })
     })
 

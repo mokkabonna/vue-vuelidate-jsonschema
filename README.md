@@ -358,19 +358,22 @@ Promises and functions are supported, just define your schema like this:
 ```js
 export default {
   schema: [
-    function loadSchemaOnCreate() {
-      // functions must return a promise or a schema/config synchronously
-      return fetchSchema('http://example.com/schema-3.json')
-    },
-    //load schemas on module require
-    fetchSchema('http://example.com/schema-1.json'), // will get root mount point
-    fetchSchema('http://example.com/schema-2.json').then(function(schema) {
-      //return a schema config object
-      return {
-        mountPoint: 'form2', //mounts to form2 property
-        schema: schema
+    {
+      mountPoint: 'form1',
+      schema: function loadSchemaOnCreate() {
+        // functions must return a promise or a schema synchronously
+        return fetchSchema('http://example.com/schema-3.json')
       }
-    })
+    },
+    // load schemas on module require on root
+    // will fail unless it returns synchronously, since we can't scaffold new properties to the
+    // vue instance after init. use a mount point.
+    fetchSchema('http://example.com/schema-1.json'),
+    //this works
+    {
+      mountPoint: 'form2', //mounts to form2 property
+      schema: fetchSchema('http://example.com/schema-2.json')
+    }
   ]
 }
 ```

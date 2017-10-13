@@ -34,20 +34,19 @@ function normalizeSchemas(schemaConfig) {
       if (config.mountPoint) {
         return config
       } else {
-        return {
-          mountPoint: '.',
-          schema: config
-        }
+        return {mountPoint: '.', schema: config}
       }
     })
   } else {
     if (schemaConfig.mountPoint) {
       return [schemaConfig]
     } else {
-      return [{
-        mountPoint: '.',
-        schema: schemaConfig
-      }]
+      return [
+        {
+          mountPoint: '.',
+          schema: schemaConfig
+        }
+      ]
     }
   }
 }
@@ -83,7 +82,8 @@ function generateValidationSchema(schemas) {
   var rest = difference(schemas, roots)
 
   return reduce(rest, function(all, schemaConfig) {
-    set(all, schemaConfig.mountPoint, propertyRules.getPropertyValidationRules(schemaConfig.schema, true, true))
+    var existing = get(all, schemaConfig.mountPoint)
+    set(all, schemaConfig.mountPoint, merge(existing, propertyRules.getPropertyValidationRules(schemaConfig.schema, true, true)))
     return all
   }, root)
 }
@@ -108,7 +108,9 @@ var mixin = {
     this.$options.methods = Vue.config.optionMergeStrategies.methods({
       getSchemaData: function(schemaConfig) {
         var originallyArray = Array.isArray(schemaConfig)
-        var normalizedSchemas = Array.isArray(schemaConfig) ? schemaConfig : [schemaConfig]
+        var normalizedSchemas = Array.isArray(schemaConfig)
+          ? schemaConfig
+          : [schemaConfig]
         var self = this
         return reduce(normalizedSchemas, function(all, schema) {
           var root = self
@@ -162,6 +164,12 @@ var mixin = {
     })
 
     if (hasPromise) {
+      calledSchemas.forEach(function(config, i) {
+        if (config.mountPoint === '.' && isFunction(config.schema.then)) {
+          throw new Error('Schema with index ' + i + ' has mount point at the root and is a promise. This is not supported. You can\'t mount to root async. Due to vue limitation. Use a mount point.')
+        }
+      })
+
       var allSchemaPromise = Promise.all(calledSchemas.map(function(schemaConfig) {
         return schemaConfig.schema.then(function(schema) {
           var newConfig = omit(schemaConfig, 'schema')
