@@ -1011,9 +1011,9 @@ describe('plugin', function() {
         })
 
         expect(vm.$v.$invalid).to.eql(false)
-        // root is required
+        // root is not required
         vm.schema = undefined
-        expect(vm.$v.$invalid).to.eql(true)
+        expect(vm.$v.$invalid).to.eql(false)
         // obj is not required, by extension neither are str
         vm.schema = {}
         expect(vm.$v.$invalid).to.eql(false)
@@ -1351,6 +1351,47 @@ describe('plugin', function() {
           expect(vm.$v.schema.str.$invalid).to.eql(false)
           vm.schema.str = undefined
           expect(vm.$v.schema.str.$invalid).to.eql(true)
+        })
+
+        it('does not apply if the parent is not object', function() {
+          var vm = new Vue({
+            mixins: [Vuelidate.validationMixin],
+            schema: {
+              title: 'the parent',
+              properties: {
+                str: {
+                  type: 'string',
+                  title: 'The string'
+                }
+              },
+              required: ['str']
+            }
+          })
+
+          expect(vm.$v.schema.str.$params.schemaRequired.type).to.eql('schemaRequired')
+          vm.schema.str = ''
+          expect(vm.$v.schema.str.$invalid).to.eql(false)
+          vm.schema.str = undefined
+          expect(vm.$v.schema.str.$invalid).to.eql(true)
+          vm.schema.str = 'string'
+          vm.schema = null
+          expect(vm.$v.schema.str.$invalid).to.eql(false)
+          expect(vm.$v.schema.$invalid).to.eql(false)
+          vm.schema = undefined
+          expect(vm.$v.schema.str.$invalid).to.eql(false)
+          expect(vm.$v.schema.$invalid).to.eql(false)
+          vm.schema = 1
+          expect(vm.$v.schema.str.$invalid).to.eql(false)
+          expect(vm.$v.schema.$invalid).to.eql(false)
+          vm.schema = []
+          expect(vm.$v.schema.str.$invalid).to.eql(false)
+          expect(vm.$v.schema.$invalid).to.eql(false)
+          vm.schema = true
+          expect(vm.$v.schema.str.$invalid).to.eql(false)
+          expect(vm.$v.schema.$invalid).to.eql(false)
+          vm.schema = null
+          expect(vm.$v.schema.str.$invalid).to.eql(false)
+          expect(vm.$v.schema.$invalid).to.eql(false)
         })
       })
 
