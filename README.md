@@ -190,7 +190,7 @@ This can be used to generate validation messages.
 
 All versions of the items property is supported.
 
-#### Single schema and non object
+#### Single schema
 
 ```js
 {
@@ -202,7 +202,7 @@ All versions of the items property is supported.
 }
 ```
 
-If the numbers in the array are not minimum 3 or any non numbers are in the array then the array is invalid.
+We use vuelidate $each option. This works when items is any type.
 
 #### Multiple schemas
 
@@ -228,27 +228,6 @@ If the numbers in the array are not minimum 3 or any non numbers are in the arra
 If the first item in the array are not a number with minimum value of 3 and item 2 is not an object with name and minLength of 3 then the array is invalid.
 
 We can't expose any errors on the object itself if present, due to vuelidates limitation with the use of the $each keyword that requires all objects to be the same.
-
-#### Single schema and type object
-
-```js
-{
-  type: 'array',
-  items: {
-    type: 'object',
-    properties: {
-      name: {
-        type: 'string',
-        minLength: 3
-      }
-    },
-    required: ['name']
-  }
-}
-```
-
-Now we can utilize vuelidates **$each** property so that you can get proper error messages for properties on the objects in the array.
-
 
 ### Required property in json schema context
 

@@ -1325,7 +1325,6 @@ describe('plugin', function() {
             }
           })
 
-          expect(vm.$v.str.$params.schemaItems.type).to.eql('schemaItems')
           vm.str = undefined
           expect(vm.$v.str.$invalid).to.eql(false)
           vm.str = ['string', 1]

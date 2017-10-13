@@ -148,9 +148,8 @@ function getPropertyValidationRules(schema, propertySchema, propKey) {
     validationObj.schemaUniqueItems = uniqueValidator(propertySchema)
   }
 
-  if (has('items') && is('array') && propertySchema.items.type === 'object') {
-    validationObj.$each = getValidationRulesForObject(propertySchema.items)
-    validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
+  if (has('items') && is('array') && isPlainObject(propertySchema.items)) {
+    validationObj.$each = getPropertyValidationRules({}, propertySchema.items)
   } else if (has('items') && is('array')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   }
