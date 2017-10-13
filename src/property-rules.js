@@ -91,6 +91,10 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
     validationObj.schemaType = typeValidator(propertySchema, propertySchema.type)
   }
 
+  if (isRequired) {
+    validationObj.schemaRequired = requiredValidator(propertySchema, isAttached)
+  }
+
   if (has('oneOf')) {
     validationObj.schemaOneOf = oneOfValidator(propertySchema, propertySchema.oneOf, getPropertyValidationRules)
   }
@@ -167,10 +171,6 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
     validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true)
   } else if (has('items')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
-  }
-
-  if (isRequired) {
-    validationObj.schemaRequired = requiredValidator(propertySchema, isAttached)
   }
 
   if (has('allOf')) {
