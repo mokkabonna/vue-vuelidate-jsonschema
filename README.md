@@ -150,6 +150,7 @@ Validators are attached with the prefix schema. So required => schemaRequired
 - anyOf
 - const
 - contains
+- dependencies
 - enum
 - exclusiveMaximum
 - exclusiveMinimum
