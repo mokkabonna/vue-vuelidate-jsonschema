@@ -142,37 +142,14 @@ However for the **not, oneOf, anyOf** validators we don't consider the default v
 
 ## Supported json schema validation rules
 
-Validators are attached with the prefix schema. So required => schemaRequired
+All validators are supported. Validators are attached with the prefix schema. So required => schemaRequired
 
-- additionalItems
-- additionalProperties
+Some notes:
 - allOf this does not add a validator, but it generates validators for all the provided schemas in allOf and merges them using the **and** validator. The individual validators are still added as schemaMinLength etc. But if more schemaMinLength for a property they are combined.
-- anyOf
-- const
-- contains
-- dependencies
-- enum
-- exclusiveMaximum
-- exclusiveMinimum
 - items, if items is a schema of type object, the $each property is also used
-- maximum
-- maxItems
-- maxLength
-- maxProperties
-- minimum
-- minItems
-- minLength
-- minProperties
-- multipleOf
-- not
-- oneOf
-- pattern
-- patternProperties
-- required
 - type => schemaType, if array of types then schemaTypes
-- uniqueItems
 
-The plan is to support all rules. PR's are welcome. The library is well tested. Test cases from draft v6 are used: https://github.com/json-schema-org/JSON-Schema-Test-Suite/tree/master/tests/draft6
+The library is well tested. Test cases from draft v6 are used: https://github.com/json-schema-org/JSON-Schema-Test-Suite/tree/master/tests/draft6
 
 ### Validation of the json schema itself
 
@@ -427,7 +404,7 @@ Vue.use(VuelidateErrorExtractor, {
 
 ## Roadmap
 
-- [ ] support all json schema validation properties
+- [x] support all json schema validation properties
 - [x] support loading of remote schemas
 - [x] support $ref inside schemas (will not support, but added docs for resolving refs with third party module)
 - [ ] export own validators
