@@ -5,7 +5,7 @@ var propertyRules = require('../../../src/property-rules')
 var expect = chai.expect
 
 var validator
-describe('allOfValidator', function() {
+describe.skip('allOfValidator', function() {
   describe('when string', function() {
     var schema = {
       type: 'string',

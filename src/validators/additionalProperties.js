@@ -2,19 +2,7 @@ var vuelidate = require('vuelidate')
 var isPlainObject = require('lodash/isPlainObject')
 var every = require('lodash/every')
 var pullAll = require('lodash/pullAll')
-
-function validateGroup(item, validator, key) {
-  if (isPlainObject(validator)) {
-    return every(validator, function(innerValidator, innerKey) {
-      if (item === undefined) {
-        return true
-      }
-      return validateGroup(item[key], innerValidator, innerKey)
-    })
-  } else {
-    return validator(item)
-  }
-}
+var validate = require('../validate')
 
 module.exports = function additionalPropertiesValidator(propertySchema, additionalProperties, getPropertyValidationRules) {
   return vuelidate.withParams({
@@ -58,9 +46,7 @@ module.exports = function additionalPropertiesValidator(propertySchema, addition
 
         return every(additionalKeys, function(additionalKey) {
           var innerProp = object[additionalKey]
-          return every(validatorGroup, function(validator, key) {
-            return validateGroup(innerProp, validator, key)
-          })
+          return validate(validatorGroup, innerProp)
         })
       }
     }

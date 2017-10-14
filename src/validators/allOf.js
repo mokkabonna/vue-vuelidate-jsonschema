@@ -1,9 +1,8 @@
 var vuelidate = require('vuelidate')
 var noParamsRequired = require('./noParamsRequired')
 var typeValidator = require('./type')
-var isPlainObject = require('lodash/isPlainObject')
-var every = require('lodash/every')
-
+var validate = require('../validate')
+// this validator is currently not in use
 module.exports = function allOfValidator(propertySchema, schemas, getPropertyValidationRules) {
   return vuelidate.withParams({
     type: 'schemaAllOf',
@@ -19,31 +18,8 @@ module.exports = function allOfValidator(propertySchema, schemas, getPropertyVal
       return true
     }
 
-    var validatorGroups = schemas.map(function(itemSchema) {
-      return getPropertyValidationRules(itemSchema)
-    })
-
-    function validateGroup(item, validator, key) {
-      if (isPlainObject(validator)) {
-        return every(validator, function(innerValidator, innerKey) {
-          if (item === undefined) return true
-          return validateGroup(item[key], innerValidator, innerKey)
-        })
-      } else {
-        return validator(item)
-      }
-    }
-
-    var validationForGroups = validatorGroups.map(function(validatorSet) {
-      return function(item) {
-        return every(validatorSet, function(validator, key) {
-          return validateGroup(item, validator, key)
-        })
-      }
-    })
-
-    return validationForGroups.every(function(validatorGroup) {
-      return validatorGroup(val)
+    return schemas.every(function(itemSchema) {
+      return validate(getPropertyValidationRules(itemSchema), val)
     })
   })
 }

@@ -3,6 +3,7 @@ var isPlainObject = require('lodash/isPlainObject')
 var every = require('lodash/every')
 var reduce = require('lodash/reduce')
 var filter = require('lodash/filter')
+var validate = require('../validate')
 
 module.exports = function patternPropertiesValidator(propertySchema, patternProperties, getPropertyValidationRules) {
   return vuelidate.withParams({
@@ -43,31 +44,8 @@ module.exports = function patternPropertiesValidator(propertySchema, patternProp
     }, {})
 
     return every(schemasForKeys, function(schemas, key) {
-      var validatorGroups = schemas.map(function(itemSchema) {
-        return getPropertyValidationRules(itemSchema)
-      })
-
-      function validateGroup(item, validator, key) {
-        if (isPlainObject(validator)) {
-          return every(validator, function(innerValidator, innerKey) {
-            if (item === undefined || item === null) return true
-            return validateGroup(item[key], innerValidator, innerKey)
-          })
-        } else {
-          return validator(item)
-        }
-      }
-
-      var validationForGroups = validatorGroups.map(function(validatorSet) {
-        return function(item) {
-          return every(validatorSet, function(validator, key) {
-            return validateGroup(item, validator, key)
-          })
-        }
-      })
-
-      return every(validationForGroups, function(validatorGroup) {
-        return validatorGroup(object[key])
+      return schemas.every(function(itemSchema) {
+        return validate(getPropertyValidationRules(itemSchema), object[key])
       })
     })
   })
