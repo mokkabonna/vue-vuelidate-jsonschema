@@ -146,7 +146,7 @@ All validators are supported. Validators are attached with the prefix schema. So
 
 Some notes:
 - allOf this does not add a validator, but it generates validators for all the provided schemas in allOf and merges them using the **and** validator. The individual validators are still added as schemaMinLength etc. But if more schemaMinLength for a property they are combined.
-- items, if items is a schema of type object, the $each property is also used
+- items, if items is a single schema, the $each property is used, if not then a custom schemaItems validator is used
 - type => schemaType, if array of types then schemaTypes
 
 The library is well tested. Test cases from draft v6 are used: https://github.com/json-schema-org/JSON-Schema-Test-Suite/tree/master/tests/draft6
