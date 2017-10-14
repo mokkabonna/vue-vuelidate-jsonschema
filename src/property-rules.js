@@ -25,6 +25,7 @@ var notValidator = require('./validators/not')
 var oneOfValidator = require('./validators/oneOf')
 var patternPropertiesValidator = require('./validators/patternProperties')
 var patternValidator = require('./validators/pattern')
+var propertyNamesValidator = require('./validators/propertyNames')
 var reduce = require('lodash/reduce')
 var requiredValidator = require('./validators/required')
 var typeArrayValidator = require('./validators/typeArray')
@@ -179,6 +180,10 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
 
   if (has('patternProperties')) {
     validationObj.schemaPatternProperties = patternPropertiesValidator(propertySchema, propertySchema.patternProperties, getPropertyValidationRules)
+  }
+
+  if (has('propertyNames')) {
+    validationObj.schemaPropertyNames = propertyNamesValidator(propertySchema, propertySchema.propertyNames, getPropertyValidationRules)
   }
 
   if (has('additionalProperties')) {
