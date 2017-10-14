@@ -171,7 +171,7 @@ Validators are attached with the prefix schema. So required => schemaRequired
 - type => schemaType, if array of types then schemaTypes
 - uniqueItems
 
-The plan is to support all rules. PR's are welcome. The library is well tested. Testcases from draft v6 are used: https://github.com/json-schema-org/JSON-Schema-Test-Suite/tree/master/tests/draft6
+The plan is to support all rules. PR's are welcome. The library is well tested. Test cases from draft v6 are used: https://github.com/json-schema-org/JSON-Schema-Test-Suite/tree/master/tests/draft6
 
 ### Validation of the json schema itself
 
