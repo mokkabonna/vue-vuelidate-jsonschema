@@ -14,7 +14,6 @@ var expect = chai.expect
 // some of these we have to remove though, as they are invalid, and testing meta functionality
 var todoList = [
   'additionalItems.json',
-  'contains.json',
   'definitions.json',
   'dependencies.json',
   'propertyNames.json',

@@ -1,6 +1,7 @@
 var additionalPropertiesValidator = require('./validators/additionalProperties')
 var anyOfValidator = require('./validators/anyOf')
 var betweenValidator = require('./validators/between')
+var containsValidator = require('./validators/contains')
 var enumValidator = require('./validators/enum')
 var equalValidator = require('./validators/const')
 var exclusiveMaxValidator = require('./validators/exclusiveMaximum')
@@ -112,6 +113,10 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
 
   if (has('not')) {
     validationObj.schemaNot = notValidator(propertySchema, propertySchema.not, getPropertyValidationRules)
+  }
+
+  if (has('contains')) {
+    validationObj.schemaContains = containsValidator(propertySchema, propertySchema.contains, getPropertyValidationRules)
   }
 
   if (has('minLength')) {

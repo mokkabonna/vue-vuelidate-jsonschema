@@ -2,7 +2,6 @@ var vuelidate = require('vuelidate')
 var isPlainObject = require('lodash/isPlainObject')
 var every = require('lodash/every')
 var pullAll = require('lodash/pullAll')
-var isPlainObject = require('lodash/isPlainObject')
 
 function validateGroup(item, validator, key) {
   if (isPlainObject(validator)) {
