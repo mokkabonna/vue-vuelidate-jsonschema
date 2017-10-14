@@ -408,12 +408,11 @@ Vue.use(VuelidateErrorExtractor, {
 - [x] support loading of remote schemas
 - [x] support $ref inside schemas (will not support, but added docs for resolving refs with third party module)
 - [ ] export own validators
-- [ ] more tests for really complex schemas
-- [ ] scaffold data, populate, serialize and test output against mainstream json schema validator (ajv)
+- [x] more tests for really complex schemas
+- [x] scaffold data, populate, serialize and test output against mainstream json schema validator (ajv)
 - [x] document and test mounting procedure (multiple schemas in one vm)
 - [ ] possibly support and test circular $refs
-- [ ] better validation params for array items validation (when not object)
-- [ ] document exactly what validators are used for any json schema validation property
+- [x] better validation params for array items validation (when not object)
 - [x] pass title, description etc to the validator as params (possibly whole property schema)
 
 
