@@ -202,7 +202,10 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
     validationObj.schemaUniqueItems = uniqueValidator(propertySchema)
   }
 
-  if (has('items') && isPlainObject(propertySchema.items)) {
+  // if we have a singular type of array then we don't need the dynamic regeneration
+  if (has('items') && propertySchema.type === 'array' && isPlainObject(propertySchema.items)) {
+    validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true, null, parents.concat(0))
+  } else if (has('items') && isPlainObject(propertySchema.items)) {
     // A bit costly maybe but regenerate validations if the property is not an array anymore
     if (Array.isArray(get(this, parents.join('.')))) {
       validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true, null, parents.concat(0))
