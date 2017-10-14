@@ -57,8 +57,8 @@ function createAndValidator(obj) {
   })
 }
 
-function impossiblevalidator() {
-  return false
+function mostBeUndefined(val) {
+  return val === undefined
 }
 
 function getPropertyValidationRules(propertySchema, isRequired, isAttached, propKey, parents) {
@@ -70,7 +70,7 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
   if (propertySchema === true) {
     return validationObj
   } else if (propertySchema === false) {
-    validationObj.schemaImpossible = impossiblevalidator
+    validationObj.schemaNotPresent = mostBeUndefined
     return validationObj
   }
 

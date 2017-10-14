@@ -20,11 +20,9 @@ var todoList = [
   'exclusiveMinimum.json',
   'definitions.json',
   'dependencies.json',
-  'properties.json',
   'propertyNames.json',
   'ref.json',
-  'refRemote.json',
-  'required.json'
+  'refRemote.json'
 ]
 
 // set this to some part of filename to only run one file
