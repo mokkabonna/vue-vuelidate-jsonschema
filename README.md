@@ -144,11 +144,15 @@ However for the **not, oneOf, anyOf** validators we don't consider the default v
 
 Validators are attached with the prefix schema. So required => schemaRequired
 
+- additionalItems
 - additionalProperties
 - allOf this does not add a validator, but it generates validators for all the provided schemas in allOf and merges them using the **and** validator. The individual validators are still added as schemaMinLength etc. But if more schemaMinLength for a property they are combined.
 - anyOf
 - const
+- contains
 - enum
+- exclusiveMaximum
+- exclusiveMinimum
 - items, if items is a schema of type object, the $each property is also used
 - maximum
 - maxItems

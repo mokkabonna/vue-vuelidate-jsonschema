@@ -1,3 +1,4 @@
+var additionalItemsValidator = require('./validators/additionalItems')
 var additionalPropertiesValidator = require('./validators/additionalProperties')
 var anyOfValidator = require('./validators/anyOf')
 var betweenValidator = require('./validators/between')
@@ -113,6 +114,10 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
 
   if (has('not')) {
     validationObj.schemaNot = notValidator(propertySchema, propertySchema.not, getPropertyValidationRules)
+  }
+
+  if (has('additionalItems')) {
+    validationObj.schemaAdditionalItems = additionalItemsValidator(propertySchema, propertySchema.additionalItems, getPropertyValidationRules)
   }
 
   if (has('contains')) {

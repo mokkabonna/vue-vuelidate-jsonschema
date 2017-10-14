@@ -13,7 +13,6 @@ var expect = chai.expect
 // TODO: when this list is empty I think we are pretty much feature complete
 // some of these we have to remove though, as they are invalid, and testing meta functionality
 var todoList = [
-  'additionalItems.json',
   'definitions.json',
   'dependencies.json',
   'propertyNames.json',
