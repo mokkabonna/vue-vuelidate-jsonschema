@@ -15,7 +15,9 @@ var expect = chai.expect
 var todoList = [
   // results in a circular schema when dereferenced, that is not supported yet
   'definitions.json',
+  // does not support internal refs yet
   'ref.json',
+  // will not support this testcase, as it has dependencies on a localhost etc.
   'refRemote.json'
 ]
 
