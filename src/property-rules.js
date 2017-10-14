@@ -3,6 +3,9 @@ var anyOfValidator = require('./validators/anyOf')
 var betweenValidator = require('./validators/between')
 var enumValidator = require('./validators/enum')
 var equalValidator = require('./validators/const')
+var exclusiveMaxValidator = require('./validators/exclusiveMaximum')
+var exclusiveMinValidator = require('./validators/exclusiveMinimum')
+var get = require('lodash/get')
 var isFunction = require('lodash/isFunction')
 var isPlainObject = require('lodash/isPlainObject')
 var itemsValidator = require('./validators/items')
@@ -20,7 +23,6 @@ var oneOfValidator = require('./validators/oneOf')
 var patternPropertiesValidator = require('./validators/patternProperties')
 var patternValidator = require('./validators/pattern')
 var reduce = require('lodash/reduce')
-var get = require('lodash/get')
 var requiredValidator = require('./validators/required')
 var typeArrayValidator = require('./validators/typeArray')
 var typeValidator = require('./validators/type')
@@ -134,6 +136,14 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
     validationObj.schemaMinimum = minValidator(propertySchema, propertySchema.minimum)
   } else if (has('maximum')) {
     validationObj.schemaMaximum = maxValidator(propertySchema, propertySchema.maximum)
+  }
+
+  if (has('exclusiveMinimum')) {
+    validationObj.schemaExclusiveMinimum = exclusiveMinValidator(propertySchema, propertySchema.exclusiveMinimum)
+  }
+
+  if (has('exclusiveMaximum')) {
+    validationObj.schemaExclusiveMaximum = exclusiveMaxValidator(propertySchema, propertySchema.exclusiveMaximum)
   }
 
   if (has('maxProperties')) {
