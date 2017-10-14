@@ -20,6 +20,7 @@ var oneOfValidator = require('./validators/oneOf')
 var patternPropertiesValidator = require('./validators/patternProperties')
 var patternValidator = require('./validators/pattern')
 var reduce = require('lodash/reduce')
+var get = require('lodash/get')
 var requiredValidator = require('./validators/required')
 var typeArrayValidator = require('./validators/typeArray')
 var typeValidator = require('./validators/type')
@@ -60,8 +61,10 @@ function impossiblevalidator() {
   return false
 }
 
-function getPropertyValidationRules(propertySchema, isRequired, isAttached, propKey) {
+function getPropertyValidationRules(propertySchema, isRequired, isAttached, propKey, parents) {
   var validationObj = {}
+  var self = this
+  parents = parents || []
 
   // support for boolean schemas
   if (propertySchema === true) {
@@ -80,7 +83,7 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
     var req = propertySchema.required || []
     validationObj = reduce(propertySchema.properties, function(all, childPropSchema, propKey) {
       var propRequired = req.indexOf(propKey) !== -1
-      all[propKey] = getPropertyValidationRules(childPropSchema, propRequired, isAttached, propKey)
+      all[propKey] = getPropertyValidationRules.call(self, childPropSchema, propRequired, isAttached, propKey, parents.concat(propKey))
       return all
     }, validationObj)
   }
@@ -170,7 +173,10 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
   }
 
   if (has('items') && isPlainObject(propertySchema.items)) {
-    validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true)
+    // A bit costly maybe but regenerate validations if the property is not an array anymore
+    if (Array.isArray(get(this, parents.join('.')))) {
+      validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true, null, parents.concat(0))
+    }
   } else if (has('items')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   }

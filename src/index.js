@@ -53,6 +53,7 @@ function normalizeSchemas(schemaConfig) {
 
 function generateValidationSchema(schemas) {
   var root = {}
+  var self = this
 
   var roots = schemas.filter(function(schemaConfig) {
     return schemaConfig.mountPoint === '.'
@@ -74,7 +75,7 @@ function generateValidationSchema(schemas) {
 
   if (roots.length) {
     root = roots.reduce(function(all, schemaConfig) {
-      merge(all, propertyRules.getPropertyValidationRules(schemaConfig.schema, true, true))
+      merge(all, propertyRules.getPropertyValidationRules.call(self, schemaConfig.schema, true, true))
       return all
     }, root)
   }
@@ -83,7 +84,8 @@ function generateValidationSchema(schemas) {
 
   return reduce(rest, function(all, schemaConfig) {
     var existing = get(all, schemaConfig.mountPoint)
-    set(all, schemaConfig.mountPoint, merge(existing, propertyRules.getPropertyValidationRules(schemaConfig.schema, true, true)))
+    var parents = schemaConfig.mountPoint.split('.')
+    set(all, schemaConfig.mountPoint, merge(existing, propertyRules.getPropertyValidationRules.call(self, schemaConfig.schema, true, true, null, parents)))
     return all
   }, root)
 }
@@ -99,7 +101,7 @@ var mixin = {
 
     this.$options.validations = mergeStrategy(function() {
       if (this.$schema && !isFunction(this.$schema.then)) {
-        return generateValidationSchema(this.$schema)
+        return generateValidationSchema.call(this, this.$schema)
       } else {
         return {}
       }
@@ -169,8 +171,8 @@ var mixin = {
         })
       })).then(function(schemaConfigs) {
         // reactivity is already set up, we can just replace properties
-        self.$schema = schemaConfigs
         Object.assign(self, createDataProperties(schemaConfigs))
+        self.$schema = schemaConfigs
       })
 
       Vue.util.defineReactive(this, '$schema', allSchemaPromise)
