@@ -10,7 +10,6 @@ The goal is that if your vuelidate validation is valid then you will also pass v
 npm install vue-vuelidate-jsonschema --save
 ```
 
-
 ## Install plugin globally
 
 NOTE: if using this plugin as a global mixin, make sure to use it **before** you register Vuelidate.
