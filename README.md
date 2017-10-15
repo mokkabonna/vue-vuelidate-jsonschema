@@ -410,7 +410,7 @@ Vue.use(VuelidateErrorExtractor, {
 - [x] more tests for really complex schemas
 - [x] scaffold data, populate, serialize and test output against mainstream json schema validator (ajv)
 - [x] document and test mounting procedure (multiple schemas in one vm)
-- [ ] possibly support and test circular $refs
+- [x] possibly support and test circular $refs
 - [x] better validation params for array items validation (when not object)
 - [x] pass title, description etc to the validator as params (possibly whole property schema)
 

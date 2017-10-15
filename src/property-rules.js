@@ -67,10 +67,11 @@ function mostBeUndefined(val) {
   return val === undefined
 }
 
-function getPropertyValidationRules(propertySchema, isRequired, isAttached, propKey, parents) {
+function getPropertyValidationRules(propertySchema, isRequired, isAttached, propKey, parents, schemas) {
   var validationObj = {}
   var self = this
   parents = parents || []
+  schemas = schemas || []
 
   // support for boolean schemas
   if (propertySchema === true) {
@@ -86,12 +87,16 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
 
   // add child properties
   if (has('properties')) {
-    var req = propertySchema.required || []
-    validationObj = reduce(propertySchema.properties, function(all, childPropSchema, propKey) {
-      var propRequired = req.indexOf(propKey) !== -1
-      all[propKey] = getPropertyValidationRules.call(self, childPropSchema, propRequired, isAttached, propKey, parents.concat(propKey))
-      return all
-    }, validationObj)
+    var parent = get(this, parents.slice(0).join('.'))
+    var parentHasChild = parent && parent.hasOwnProperty('child')
+    if (parentHasChild || schemas.indexOf(propertySchema) === -1) {
+      var req = propertySchema.required || []
+      validationObj = reduce(propertySchema.properties, function(all, childPropSchema, propKey) {
+        var propRequired = req.indexOf(propKey) !== -1
+        all[propKey] = getPropertyValidationRules.call(self, childPropSchema, propRequired, isAttached, propKey, parents.concat(propKey), schemas.concat(propertySchema))
+        return all
+      }, validationObj)
+    }
   }
 
   if (Array.isArray(propertySchema.type)) {
@@ -204,19 +209,19 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
 
   // if we have a singular type of array then we don't need the dynamic regeneration
   if (has('items') && propertySchema.type === 'array' && isPlainObject(propertySchema.items)) {
-    validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true, null, parents.concat(0))
+    validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true, null, parents.concat(0), schemas.concat(propertySchema))
   } else if (has('items') && isPlainObject(propertySchema.items)) {
     // A bit costly maybe but regenerate validations if the property is not an array anymore
     if (Array.isArray(get(this, parents.join('.')))) {
-      validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true, null, parents.concat(0))
+      validationObj.$each = getPropertyValidationRules(propertySchema.items, true, true, null, parents.concat(0), schemas.concat(propertySchema))
     }
   } else if (has('items')) {
     validationObj.schemaItems = itemsValidator(propertySchema, getPropertyValidationRules)
   }
 
   if (has('allOf')) {
-    propertySchema.allOf.forEach(function(schema) {
-      mergeIntoArray(validationObj, getPropertyValidationRules(schema, false, isAttached))
+    propertySchema.allOf.forEach((schema) => {
+      mergeIntoArray(validationObj, getPropertyValidationRules.call(this, schema, false, isAttached, null, parents, schemas))
     })
 
     createAndValidator(validationObj)
