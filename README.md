@@ -376,6 +376,40 @@ You need to use a `v-if` in your view to prevent the view from failing if you tr
 
 If one of your schemas contain a $ref property you can then resolve those manually in the promise or use [json-schema-ref-parser](https://github.com/BigstickCarpet/json-schema-ref-parser) to dereference your schema for you.
 
+### Circular schemas
+
+If you end up with a schema object with circular object references when you dereference the schema with json-schema-ref-parser we will detect that and only create data properties until we run into a previously encountered subschema. For validation rules we create validation rules initially only until we find the same schema again. But if you keep adding data objects we will create new validators for that as you go. Keep in mind the vue rule that you shouldn't add properties to an object that is already attached.
+
+So this won't work very well:
+
+```js
+vm.schema.child.child.child = {}
+vm.schema.child.child.child.name = 'Peter' // this won't become reactive, so we can't create validations for it
+```
+
+But the following examples will all work fine:
+
+```js
+vm.schema.child.child.child = {
+  name: 'Peter'
+}
+```
+
+```js
+vm.schema.child.child.child = {
+  name: undefined
+}
+vm.schema.child.child.child.name = 'Peter' // name is now already reactive
+```
+
+```js
+vm.schema.child.child.child = {}
+Vue.set(vm.schema.child.child.child, 'name', 'Peter') // name will now become reactive
+```
+
+Read more here: https://vuejs.org/v2/guide/reactivity.html
+
+
 ## Extract data
 
 The mixin adds a method getSchemaData that you can call to get all the data that a schema originally helped scaffold.

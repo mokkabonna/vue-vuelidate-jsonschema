@@ -87,16 +87,16 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
 
   // add child properties
   if (has('properties')) {
-    var parent = get(this, parents.slice(0).join('.'))
-    var parentHasChild = parent && parent.hasOwnProperty('child')
-    if (parentHasChild || schemas.indexOf(propertySchema) === -1) {
-      var req = propertySchema.required || []
-      validationObj = reduce(propertySchema.properties, function(all, childPropSchema, propKey) {
+    var dataParent = get(this, parents.join('.'))
+    var req = propertySchema.required || []
+    validationObj = reduce(propertySchema.properties, function(all, childPropSchema, propKey) {
+      var parentHasChild = dataParent && dataParent.hasOwnProperty(propKey)
+      if (parentHasChild || schemas.indexOf(childPropSchema) === -1) {
         var propRequired = req.indexOf(propKey) !== -1
         all[propKey] = getPropertyValidationRules.call(self, childPropSchema, propRequired, isAttached, propKey, parents.concat(propKey), schemas.concat(propertySchema))
-        return all
-      }, validationObj)
-    }
+      }
+      return all
+    }, validationObj)
   }
 
   if (Array.isArray(propertySchema.type)) {
