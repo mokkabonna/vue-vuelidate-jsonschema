@@ -413,7 +413,8 @@ Vue.use(VuelidateErrorExtractor, {
 - [ ] possibly support and test circular $refs
 - [x] better validation params for array items validation (when not object)
 - [x] pass title, description etc to the validator as params (possibly whole property schema)
-
+- [ ] support standard format http://json-schema.org/latest/json-schema-validation.html#rfc.section.8
+- [ ] allow registration of custom validators for custom formats
 
 PRs are welcome.
 
