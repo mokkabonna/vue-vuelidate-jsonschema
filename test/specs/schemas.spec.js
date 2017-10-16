@@ -41,8 +41,8 @@ describe('schema fixtures validation', function() {
       return Promise.all(innerSchema.map(function(config) {
         if (_.isPlainObject(config.schema)) {
           return $RefParser.dereference(config.schema).then(function(dereferenced) {
-            innerSchema.schema = dereferenced
-            return innerSchema
+            config.schema = dereferenced
+            return config
           })
         } else {
           innerSchema.schema = config.schema

@@ -116,22 +116,13 @@ var mixin = {
         var self = this
         return reduce(normalizedSchemas, function(all, schema) {
           var root = self
+
+          if (schemaConfig.mountPoint !== '.' && !originallyArray) {
+            return get(self, schemaConfig.mountPoint)
+          }
+
           var data = createDataProperties(normalizedSchemas)
           var flatStructure = isPlainObject(data) ? flattenObject(data) : {}
-          if (schemaConfig.mountPoint !== '.' && !originallyArray) {
-            data = get(self, schemaConfig.mountPoint)
-            flatStructure = isPlainObject(data) ? flattenObject(data) : {}
-            root = get(self, schemaConfig.mountPoint)
-
-            if (isPlainObject(root)) {
-              flatStructure = reduce(flatStructure, function(all, val, key) {
-                all[String(key).replace(schemaConfig.mountPoint, '').replace(/^\./, '')] = val
-                return all
-              }, {})
-            } else {
-              return root
-            }
-          }
 
           return reduce(flatStructure, function(all, val, path) {
             return set(all, path, get(root, path))
