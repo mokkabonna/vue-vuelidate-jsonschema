@@ -149,7 +149,8 @@ describe('circular references', function() {
             child: {
               name: 'Trevor',
               child: {
-                name: undefined
+                name: undefined,
+                child: undefined
               }
             }
           }
