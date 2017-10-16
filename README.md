@@ -447,6 +447,7 @@ Vue.use(VuelidateErrorExtractor, {
 - [x] possibly support and test circular $refs
 - [x] better validation params for array items validation (when not object)
 - [x] pass title, description etc to the validator as params (possibly whole property schema)
+- [ ] consider exposing generation of data structure from schema, like when adding new items to an array
 
 
 PRs are welcome.
