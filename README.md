@@ -378,13 +378,35 @@ If one of your schemas contain a $ref property you can then resolve those manual
 
 ### Circular schemas
 
-If you end up with a schema object with circular object references when you dereference the schema with json-schema-ref-parser we will detect that and only create data properties until we run into a previously encountered subschema. For validation rules we create validation rules initially only until we find the same schema again. But if you keep adding data objects we will create new validators for that as you go. Keep in mind the vue rule that you shouldn't add properties to an object that is already attached.
+If you end up with a schema object with circular object references when you dereference the schema with json-schema-ref-parser we will detect that and only create data properties until we run into a previously encountered subschema. For validation rules we create validation rules initially only until we find the same schema again. But if you keep adding data objects we will create new validators for that object and any properties belonging to that schema as you go.
 
-So this won't work very well:
+Here is an example of a circular schema:
+
+```js
+var schema = {
+  title: 'Person',
+  type: 'object',
+  properties: {
+    name: {
+      type: 'string',
+      minLength: 2
+    }
+  },
+  required: ['name']
+}
+
+// creating the circular reference
+schema.properties.child = schema
+```
+
+Keep in mind the vue rule that you shouldn't directly add properties to an object that is already attached. Read more here: https://vuejs.org/v2/guide/reactivity.html
+
+This won't work very well:
 
 ```js
 vm.schema.child.child.child = {}
-vm.schema.child.child.child.name = 'Peter' // this won't become reactive, so we can't create validations for it
+// this won't become reactive, so validations won't run even though they are created
+vm.schema.child.child.child.name = 'Peter'
 ```
 
 But the following examples will all work fine:
@@ -407,7 +429,20 @@ vm.schema.child.child.child = {}
 Vue.set(vm.schema.child.child.child, 'name', 'Peter') // name will now become reactive
 ```
 
-Read more here: https://vuejs.org/v2/guide/reactivity.html
+Adding a big nested data structure at once will also work:
+
+```js
+vm.schema.child = {
+  name: 'Trevor',
+  child: {
+    name: 'Trevor',
+    child: {
+      name: 'Trevor',
+      etc...
+    }
+  }
+}
+```
 
 
 ## Extract data

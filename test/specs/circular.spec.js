@@ -130,4 +130,36 @@ describe('circular references', function() {
       validationsBase = getValidationBase()
     }
   })
+
+  it('creates validation structure if data are added in bulk', function() {
+    var vm = new Vue({
+      schema: schema
+    })
+
+    vm.schema.name = 'Ana'
+
+    vm.schema.child = {
+      name: 'Trevor',
+      child: {
+        name: 'Trevor',
+        child: {
+          name: 'Trevor',
+          child: {
+            name: 'Trevor',
+            child: {
+              name: 'Trevor',
+              child: {
+                name: undefined
+              }
+            }
+          }
+        }
+      }
+    }
+
+    expect(vm.$v.schema.child.child.child.child.child.child.name.$invalid).to.eql(true)
+    expect(vm.$v.$invalid).to.eql(true)
+    vm.schema.child.child.child.child.child.child.name = 'Trevor'
+    expect(vm.$v.$invalid).to.eql(false)
+  })
 })
