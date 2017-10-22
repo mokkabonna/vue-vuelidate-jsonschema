@@ -376,6 +376,10 @@ You need to use a `v-if` in your view to prevent the view from failing if you tr
 
 If one of your schemas contain a $ref property you can then resolve those manually in the promise or use [json-schema-ref-parser](https://github.com/BigstickCarpet/json-schema-ref-parser) to dereference your schema for you.
 
+### Getting better validation rules
+
+I recommend running your schema through both [json-schema-ref-parser](https://github.com/BigstickCarpet/json-schema-ref-parser) and my own [json-schema-merge-allof](https://github.com/mokkabonna/json-schema-merge-allof) first as that will get rid of many complicated rules so that the schema that the validation rules are constructed from is much simpler and you then can more easily extract validationmessages.
+
 ### Circular schemas
 
 If you end up with a schema object with circular object references when you dereference the schema with json-schema-ref-parser we will detect that and only create data properties until we run into a previously encountered subschema. For validation rules we create validation rules initially only until we find the same schema again. But if you keep adding data objects we will create new validators for that object and any properties belonging to that schema as you go.
