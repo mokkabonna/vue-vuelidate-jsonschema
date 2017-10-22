@@ -76,6 +76,8 @@ function getPropertyValidationRules(propertySchema, isRequired, isAttached, prop
   // support for boolean schemas
   if (propertySchema === true) {
     return validationObj
+  } else if (propertySchema === undefined) {
+    return validationObj
   } else if (propertySchema === false) {
     validationObj.schemaNotPresent = mostBeUndefined
     return validationObj
