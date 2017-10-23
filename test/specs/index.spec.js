@@ -217,10 +217,10 @@ describe('plugin', function() {
         expect(callCount).to.eql(1)
       })
     })
-    
+
     it('support async and sync', function() {
       Vue.use(Vuelidate.Vuelidate)
-      
+
       function fetchSchema() {
         return new Promise(function(resolve) {
           resolve({

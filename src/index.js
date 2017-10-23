@@ -5,6 +5,7 @@ var merge = require('lodash/merge')
 var set = require('lodash/set')
 var get = require('lodash/get')
 var difference = require('lodash/difference')
+var defaultsDeep = require('lodash/defaultsDeep')
 var omit = require('lodash/omit')
 var isPlainObject = require('lodash/isPlainObject')
 var cloneDeep = require('lodash/cloneDeep')
@@ -49,6 +50,14 @@ function normalizeSchemas(schemaConfig) {
       ]
     }
   }
+}
+
+function createFromSchema(schema, values) {
+  var generated = createDataProperties([{
+    mountPoint: '.',
+    schema: schema
+  }])
+  return defaultsDeep(values, generated)
 }
 
 function generateValidationSchema(schemas) {
@@ -117,6 +126,7 @@ function createMixin(options) {
       }, this.$options.validations)
 
       this.$options.methods = Vue.config.optionMergeStrategies.methods({
+        createFromSchema: createFromSchema,
         getSchemaData: function(schemaConfig) {
           var originallyArray = Array.isArray(schemaConfig)
           var normalizedSchemas = Array.isArray(schemaConfig)
@@ -171,7 +181,7 @@ function createMixin(options) {
             throw new Error('Schema with index ' + i + ' has mount point at the root and is a promise. This is not supported. You can\'t mount to root async. Due to vue limitation. Use a mount point.')
           }
         })
-        
+
 
         var allSchemaPromise = Promise.all(calledSchemas.map(function(schemaConfig) {
           if (isFunction(schemaConfig.schema.then)) {
@@ -205,6 +215,7 @@ function createMixin(options) {
 }
 
 module.exports = {
+  createFromSchema: createFromSchema,
   mixin: createMixin(),
   install: function(Vue, options) {
     Vue.mixin(createMixin(options))
