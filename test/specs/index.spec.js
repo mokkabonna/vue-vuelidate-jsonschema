@@ -217,6 +217,39 @@ describe('plugin', function() {
         expect(callCount).to.eql(1)
       })
     })
+    
+    it('support async and sync', function() {
+      Vue.use(Vuelidate.Vuelidate)
+      
+      function fetchSchema() {
+        return new Promise(function(resolve) {
+          resolve({
+            type: 'object',
+            properties: {
+              prop1: {
+                type: 'string',
+                minLength: 3,
+                default: '123'
+              }
+            }
+          })
+        })
+      }
+
+      var vm = new Vue({
+        schema: [fetchSchema, {
+          mountPoint: 'other',
+          schema: {
+            type: 'object'
+          }
+        }]
+      })
+
+      return vm.$schema.then(function() {
+        expect(vm.schema.prop1).to.eql('123')
+        expect(vm.other).to.eql({})
+      })
+    })
 
     it('support calling multiple functions', function() {
       function fetchSchema() {
