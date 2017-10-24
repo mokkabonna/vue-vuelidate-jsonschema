@@ -107,7 +107,6 @@ function createMixin(options) {
       var self = this
       var schema = this.$options.schema
       var propsData = this.$options.propsData
-      var propsSchemas
       var normalized = []
 
       if (schema) {
