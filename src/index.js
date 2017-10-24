@@ -35,19 +35,20 @@ function normalizeSchemas(schemaConfig) {
       if (config.mountPoint) {
         return config
       } else {
-        return {mountPoint: 'schema', schema: config}
+        return {
+          mountPoint: 'schema',
+          schema: config
+        }
       }
     })
   } else {
     if (schemaConfig.mountPoint) {
       return [schemaConfig]
     } else {
-      return [
-        {
-          mountPoint: 'schema',
-          schema: schemaConfig
-        }
-      ]
+      return [{
+        mountPoint: 'schema',
+        schema: schemaConfig
+      }]
     }
   }
 }
@@ -106,12 +107,18 @@ function createMixin(options) {
       var self = this
       var schema = this.$options.schema
       var propsData = this.$options.propsData
+      var propsSchemas
+      var normalized = []
 
-      if(propsData && propsData[options.schemaPropsName] && !schema){
-        schema = propsData[options.schemaPropsName]
+      if (schema) {
+        normalized = normalizeSchemas(schema)
       }
 
-      if (!schema) {
+      if (propsData && propsData[options.schemaPropsName]) {
+        normalized = normalized.concat(normalizeSchemas(propsData[options.schemaPropsName]))
+      }
+
+      if (!normalized.length) {
         return
       }
 
@@ -129,9 +136,9 @@ function createMixin(options) {
         createFromSchema: createFromSchema,
         getSchemaData: function(schemaConfig) {
           var originallyArray = Array.isArray(schemaConfig)
-          var normalizedSchemas = Array.isArray(schemaConfig)
-            ? schemaConfig
-            : [schemaConfig]
+          var normalizedSchemas = Array.isArray(schemaConfig) ?
+            schemaConfig :
+            [schemaConfig]
           var self = this
           return reduce(normalizedSchemas, function(all, schema) {
             var root = self
@@ -158,8 +165,6 @@ function createMixin(options) {
           }, {})
         }
       }, this.$options.methods)
-
-      var normalized = normalizeSchemas(schema)
 
       var calledSchemas = normalized.map(function(schemaConfig) {
         if (isFunction(schemaConfig.schema)) {
