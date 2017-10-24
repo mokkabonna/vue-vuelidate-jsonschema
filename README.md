@@ -376,6 +376,79 @@ You need to use a `v-if` in your view to prevent the view from failing if you tr
 
 If one of your schemas contain a $ref property you can then resolve those manually in the promise or use [json-schema-ref-parser](https://github.com/BigstickCarpet/json-schema-ref-parser) to dereference your schema for you.
 
+### Getting better validation rules
+
+I recommend running your schema through both [json-schema-ref-parser](https://github.com/BigstickCarpet/json-schema-ref-parser) and my own [json-schema-merge-allof](https://github.com/mokkabonna/json-schema-merge-allof) first as that will get rid of many complicated rules so that the schema that the validation rules are constructed from is much simpler and you then can more easily extract validationmessages.
+
+### Circular schemas
+
+If you end up with a schema object with circular object references when you dereference the schema with json-schema-ref-parser we will detect that and only create data properties until we run into a previously encountered subschema. For validation rules we create validation rules initially only until we find the same schema again. But if you keep adding data objects we will create new validators for that object and any properties belonging to that schema as you go.
+
+Here is an example of a circular schema:
+
+```js
+var schema = {
+  title: 'Person',
+  type: 'object',
+  properties: {
+    name: {
+      type: 'string',
+      minLength: 2
+    }
+  },
+  required: ['name']
+}
+
+// creating the circular reference
+schema.properties.child = schema
+```
+
+Keep in mind the vue rule that you shouldn't directly add properties to an object that is already attached. Read more here: https://vuejs.org/v2/guide/reactivity.html
+
+This won't work very well:
+
+```js
+vm.schema.child.child.child = {}
+// this won't become reactive, so validations won't run even though they are created
+vm.schema.child.child.child.name = 'Peter'
+```
+
+But the following examples will all work fine:
+
+```js
+vm.schema.child.child.child = {
+  name: 'Peter'
+}
+```
+
+```js
+vm.schema.child.child.child = {
+  name: undefined
+}
+vm.schema.child.child.child.name = 'Peter' // name is now already reactive
+```
+
+```js
+vm.schema.child.child.child = {}
+Vue.set(vm.schema.child.child.child, 'name', 'Peter') // name will now become reactive
+```
+
+Adding a big nested data structure at once will also work:
+
+```js
+vm.schema.child = {
+  name: 'Trevor',
+  child: {
+    name: 'Trevor',
+    child: {
+      name: 'Trevor',
+      etc...
+    }
+  }
+}
+```
+
+
 ## Extract data
 
 The mixin adds a method getSchemaData that you can call to get all the data that a schema originally helped scaffold.
@@ -410,9 +483,10 @@ Vue.use(VuelidateErrorExtractor, {
 - [x] more tests for really complex schemas
 - [x] scaffold data, populate, serialize and test output against mainstream json schema validator (ajv)
 - [x] document and test mounting procedure (multiple schemas in one vm)
-- [ ] possibly support and test circular $refs
+- [x] possibly support and test circular $refs
 - [x] better validation params for array items validation (when not object)
 - [x] pass title, description etc to the validator as params (possibly whole property schema)
+- [ ] consider exposing generation of data structure from schema, like when adding new items to an array
 - [ ] support standard format http://json-schema.org/latest/json-schema-validation.html#rfc.section.8
 - [ ] allow registration of custom validators for custom formats
 

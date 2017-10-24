@@ -107,7 +107,6 @@ function createMixin(options) {
       var self = this
       var schema = this.$options.schema
       var propsData = this.$options.propsData
-      var propsSchemas
       var normalized = []
 
       if (schema) {
@@ -136,9 +135,9 @@ function createMixin(options) {
         createFromSchema: createFromSchema,
         getSchemaData: function(schemaConfig) {
           var originallyArray = Array.isArray(schemaConfig)
-          var normalizedSchemas = Array.isArray(schemaConfig) ?
-            schemaConfig :
-            [schemaConfig]
+          var normalizedSchemas = Array.isArray(schemaConfig)
+            ? schemaConfig
+            : [schemaConfig]
           var self = this
           return reduce(normalizedSchemas, function(all, schema) {
             var root = self
@@ -186,7 +185,6 @@ function createMixin(options) {
             throw new Error('Schema with index ' + i + ' has mount point at the root and is a promise. This is not supported. You can\'t mount to root async. Due to vue limitation. Use a mount point.')
           }
         })
-
 
         var allSchemaPromise = Promise.all(calledSchemas.map(function(schemaConfig) {
           if (isFunction(schemaConfig.schema.then)) {

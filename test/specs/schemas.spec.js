@@ -8,13 +8,12 @@ var path = require('path')
 var Vuelidate = requireUncached('vuelidate')
 var glob = require('glob')
 var $RefParser = require('json-schema-ref-parser')
+var stringify = require('json-stringify-safe')
 var expect = chai.expect
 
-// TODO: when this list is empty I think we are pretty much feature complete
+// TODO: when this list is almost empty I think we are pretty much feature complete
 // some of these we have to remove though, as they are invalid, and testing meta functionality
 var todoList = [
-  // results in a circular schema when dereferenced, that is not supported yet
-  'definitions.json',
   // does not support internal refs yet
   'ref.json',
   // will not support this testcase, as it has dependencies on a localhost etc.
@@ -40,11 +39,10 @@ describe('schema fixtures validation', function() {
   before(function() {
     return Promise.all(schemas.map(function(innerSchema) {
       return Promise.all(innerSchema.map(function(config) {
-        // TODO support boolean schemas
         if (_.isPlainObject(config.schema)) {
           return $RefParser.dereference(config.schema).then(function(dereferenced) {
-            innerSchema.schema = dereferenced
-            return innerSchema
+            config.schema = dereferenced
+            return config
           })
         } else {
           innerSchema.schema = config.schema
@@ -52,9 +50,9 @@ describe('schema fixtures validation', function() {
         }
       }))
     })).then(function(all) {
-      var hasRefStill = JSON.stringify(all.map(function(obj) {
-        return obj.schema
-      })).indexOf('$ref') !== -1
+      var hasRefStill = stringify(all.map(function(obj) {
+        return obj
+      })).indexOf('{$ref') !== -1 // $ref is part of the meta schema, but not with { in front
 
       if (hasRefStill) {
         throw new Error('Error in test precondition, some refs are not resolved')

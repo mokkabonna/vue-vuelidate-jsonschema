@@ -36,19 +36,19 @@ function getDefaultValue(schema, isRequired, ignoreDefaultProp) {
   }
 }
 
-function setProperties(base, schema, ignoreDefaultProp, shallow) {
+function setProperties(base, schema, ignoreDefaultProp, shallow, schemas) {
   if (schema.default !== undefined) {
     return Object.assign(base, schema.default)
   }
   if (!base) return
+  schemas = schemas || []
   var additionalScaffoldingSchemas = ['allOf']
   var additionalShallow = ['anyOf', 'oneOf', 'not']
   // set all properties based on default values etc in allOf
-
   additionalScaffoldingSchemas.forEach(function(prop) {
     if (Array.isArray(schema[prop])) {
       schema[prop].forEach(function(subSchema) {
-        setProperties(base, subSchema)
+        setProperties(base, subSchema, false, false, schemas.concat(schema, subSchema))
       })
     }
   })
@@ -56,15 +56,16 @@ function setProperties(base, schema, ignoreDefaultProp, shallow) {
   additionalShallow.forEach(function(prop) {
     if (Array.isArray(schema[prop])) {
       schema[prop].forEach(function(subSchema) {
-        setProperties(base, subSchema, true, true)
+        setProperties(base, subSchema, true, true, schemas.concat(schema, subSchema))
       })
     } else if (isPlainObject(schema[prop])) {
-      setProperties(base, schema[prop], true, true)
+      setProperties(base, schema[prop], true, true, schemas.concat(schema))
     }
   })
 
   // then add properties from base object, taking precedence
   if (isPlainObject(schema.properties)) {
+    schemas.push(schema)
     Object.keys(schema.properties).forEach(function(key) {
       var innerSchema = schema.properties[key]
       var isRequired = Array.isArray(schema.required) && schema.required.indexOf(key) !== -1
@@ -76,7 +77,8 @@ function setProperties(base, schema, ignoreDefaultProp, shallow) {
         base[key] = getDefaultValue(innerSchema, isRequired, ignoreDefaultProp)
       }
       if (!shallow && innerSchema.type === 'object' && innerSchema.properties) {
-        setProperties(base[key], innerSchema, ignoreDefaultProp)
+        if (schemas.indexOf(innerSchema) !== -1) return
+        setProperties(base[key], innerSchema, ignoreDefaultProp, false, schemas.concat(schema))
       }
     })
   }
