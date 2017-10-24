@@ -4,6 +4,7 @@ var reduce = require('lodash/reduce')
 var merge = require('lodash/merge')
 var set = require('lodash/set')
 var get = require('lodash/get')
+var defaults = require('lodash/defaults')
 var difference = require('lodash/difference')
 var defaultsDeep = require('lodash/defaultsDeep')
 var omit = require('lodash/omit')
@@ -102,7 +103,9 @@ function generateValidationSchema(schemas) {
 }
 
 function createMixin(options) {
-  options = options || {}
+  options = defaults(options, {
+    generateScaffoldHelpers: false
+  })
   return {
     beforeCreate: function() {
       var self = this
@@ -209,13 +212,13 @@ function createMixin(options) {
 
         Vue.util.defineReactive(this, '$schema', allSchemaPromise)
         this.$options.data = Vue.config.optionMergeStrategies.data(function() {
-          return createDataProperties(calledSchemas, true)
+          return createDataProperties(calledSchemas, false, options.generateScaffoldHelpers)
         }, this.$options.data)
       } else {
         // rewrite schemas normalized
         Vue.util.defineReactive(this, '$schema', calledSchemas)
         this.$options.data = Vue.config.optionMergeStrategies.data(function() {
-          return createDataProperties(calledSchemas)
+          return createDataProperties(calledSchemas, false, options.generateScaffoldHelpers)
         }, this.$options.data)
       }
     }

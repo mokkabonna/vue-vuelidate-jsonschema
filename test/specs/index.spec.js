@@ -342,6 +342,9 @@ describe('plugin', function() {
             },
             prop7: {
               type: 'null'
+            },
+            prop8: {
+              type: 'string'
             }
           },
           required: [
@@ -364,6 +367,7 @@ describe('plugin', function() {
       expect(vm.schema.prop5).to.eql(false)
       expect(vm.schema.prop6).to.eql(0)
       expect(vm.schema.prop7).to.eql(null)
+      expect(vm.schema.prop8).to.eql(undefined)
     })
 
     it('takes required property into consideration when creating default values', function() {
