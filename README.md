@@ -487,7 +487,8 @@ Vue.use(VuelidateErrorExtractor, {
 - [x] better validation params for array items validation (when not object)
 - [x] pass title, description etc to the validator as params (possibly whole property schema)
 - [ ] consider exposing generation of data structure from schema, like when adding new items to an array
-
+- [ ] support standard format http://json-schema.org/latest/json-schema-validation.html#rfc.section.8
+- [ ] allow registration of custom validators for custom formats
 
 PRs are welcome.
 

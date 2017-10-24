@@ -24,6 +24,8 @@ function getDefaultValue(schema, isRequired, ignoreDefaultProp) {
     return undefined
   } else if (schema.hasOwnProperty('default')) {
     return schema.default
+  } else if (schema.hasOwnProperty('const')) {
+    return schema.const
   } else if (!isRequired) {
     return undefined
   } else {
@@ -35,6 +37,9 @@ function getDefaultValue(schema, isRequired, ignoreDefaultProp) {
 }
 
 function setProperties(base, schema, ignoreDefaultProp, shallow, schemas) {
+  if (schema.default !== undefined) {
+    return Object.assign(base, schema.default)
+  }
   if (!base) return
   schemas = schemas || []
   var additionalScaffoldingSchemas = ['allOf']
@@ -80,6 +85,10 @@ function setProperties(base, schema, ignoreDefaultProp, shallow, schemas) {
 }
 
 function createDataProperties(schemas, shallow) {
+  var allAreArray = schemas.every(function (schema) {
+    return schema.type === 'array'
+  })
+
   return reduce(schemas, function(all, schemaConfig) {
     if (shallow) {
       set(all, schemaConfig.mountPoint, undefined)
@@ -107,7 +116,7 @@ function createDataProperties(schemas, shallow) {
     }
 
     return all
-  }, {})
+  }, allAreArray ? [] : {})
 }
 
 module.exports = createDataProperties

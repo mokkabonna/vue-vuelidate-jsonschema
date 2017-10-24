@@ -5,6 +5,7 @@ var merge = require('lodash/merge')
 var set = require('lodash/set')
 var get = require('lodash/get')
 var difference = require('lodash/difference')
+var defaultsDeep = require('lodash/defaultsDeep')
 var omit = require('lodash/omit')
 var isPlainObject = require('lodash/isPlainObject')
 var cloneDeep = require('lodash/cloneDeep')
@@ -34,21 +35,30 @@ function normalizeSchemas(schemaConfig) {
       if (config.mountPoint) {
         return config
       } else {
-        return {mountPoint: 'schema', schema: config}
+        return {
+          mountPoint: 'schema',
+          schema: config
+        }
       }
     })
   } else {
     if (schemaConfig.mountPoint) {
       return [schemaConfig]
     } else {
-      return [
-        {
-          mountPoint: 'schema',
-          schema: schemaConfig
-        }
-      ]
+      return [{
+        mountPoint: 'schema',
+        schema: schemaConfig
+      }]
     }
   }
+}
+
+function createFromSchema(schema, values) {
+  var generated = createDataProperties([{
+    mountPoint: '.',
+    schema: schema
+  }])
+  return defaultsDeep(values, generated)
 }
 
 function generateValidationSchema(schemas) {
@@ -90,99 +100,128 @@ function generateValidationSchema(schemas) {
   }, root)
 }
 
-var mixin = {
-  beforeCreate: function() {
-    var self = this
-    if (!this.$options.schema) {
-      return
-    }
+function createMixin(options) {
+  options = options || {}
+  return {
+    beforeCreate: function() {
+      var self = this
+      var schema = this.$options.schema
+      var propsData = this.$options.propsData
+      var propsSchemas
+      var normalized = []
 
-    var Vue = getVue(this)
-
-    this.$options.validations = mergeStrategy(function() {
-      if (this.$schema && !isFunction(this.$schema.then)) {
-        return generateValidationSchema.call(this, this.$schema)
-      } else {
-        return {}
-      }
-    }, this.$options.validations)
-
-    this.$options.methods = Vue.config.optionMergeStrategies.methods({
-      getSchemaData: function(schemaConfig) {
-        var originallyArray = Array.isArray(schemaConfig)
-        var normalizedSchemas = Array.isArray(schemaConfig)
-          ? schemaConfig
-          : [schemaConfig]
-        var self = this
-        return reduce(normalizedSchemas, function(all, schema) {
-          var root = self
-
-          if (schemaConfig.mountPoint !== '.' && !originallyArray) {
-            return get(self, schemaConfig.mountPoint)
-          }
-
-          var data = createDataProperties(normalizedSchemas)
-          var flatStructure = isPlainObject(data) ? flattenObject(data) : {}
-
-          return reduce(flatStructure, function(all, val, path) {
-            return set(all, path, get(root, path))
-          }, all)
-        }, {})
-      }
-    }, this.$options.methods)
-
-    var normalized = normalizeSchemas(this.$options.schema)
-
-    var calledSchemas = normalized.map(function(schemaConfig) {
-      if (isFunction(schemaConfig.schema)) {
-        var config = cloneDeep(schemaConfig)
-        config.schema = schemaConfig.schema()
-        return config
+      if (schema) {
+        normalized = normalizeSchemas(schema)
       }
 
-      return schemaConfig
-    })
+      if (propsData && propsData[options.schemaPropsName]) {
+        normalized = normalized.concat(normalizeSchemas(propsData[options.schemaPropsName]))
+      }
 
-    var hasPromise = calledSchemas.some(function(schemaConfig) {
-      return isFunction(schemaConfig.schema.then)
-    })
+      if (!normalized.length) {
+        return
+      }
 
-    if (hasPromise) {
-      calledSchemas.forEach(function(config, i) {
-        if (config.mountPoint === '.' && isFunction(config.schema.then)) {
-          throw new Error('Schema with index ' + i + ' has mount point at the root and is a promise. This is not supported. You can\'t mount to root async. Due to vue limitation. Use a mount point.')
+      var Vue = getVue(this)
+
+      this.$options.validations = mergeStrategy(function() {
+        if (this.$schema && !isFunction(this.$schema.then)) {
+          return generateValidationSchema.call(this, this.$schema)
+        } else {
+          return {}
         }
+      }, this.$options.validations)
+
+      this.$options.methods = Vue.config.optionMergeStrategies.methods({
+        createFromSchema: createFromSchema,
+        getSchemaData: function(schemaConfig) {
+          var originallyArray = Array.isArray(schemaConfig)
+          var normalizedSchemas = Array.isArray(schemaConfig)
+            ? schemaConfig
+            : [schemaConfig]
+          var self = this
+          return reduce(normalizedSchemas, function(all, schema) {
+            var root = self
+            var data = createDataProperties(normalizedSchemas)
+            var flatStructure = isPlainObject(data) ? flattenObject(data) : {}
+            if (schemaConfig.mountPoint !== '.' && !originallyArray) {
+              data = get(self, schemaConfig.mountPoint)
+              flatStructure = isPlainObject(data) ? flattenObject(data) : {}
+              root = get(self, schemaConfig.mountPoint)
+
+              if (isPlainObject(root)) {
+                flatStructure = reduce(flatStructure, function(all, val, key) {
+                  all[String(key).replace(schemaConfig.mountPoint, '').replace(/^\./, '')] = val
+                  return all
+                }, {})
+              } else {
+                return root
+              }
+            }
+
+            return reduce(flatStructure, function(all, val, path) {
+              return set(all, path, get(root, path))
+            }, all)
+          }, {})
+        }
+      }, this.$options.methods)
+
+      var calledSchemas = normalized.map(function(schemaConfig) {
+        if (isFunction(schemaConfig.schema)) {
+          var config = cloneDeep(schemaConfig)
+          config.schema = schemaConfig.schema()
+          return config
+        }
+
+        return schemaConfig
       })
 
-      var allSchemaPromise = Promise.all(calledSchemas.map(function(schemaConfig) {
-        return schemaConfig.schema.then(function(schema) {
-          var newConfig = omit(schemaConfig, 'schema')
-          newConfig.schema = schema
-          return newConfig
+      var hasPromise = calledSchemas.some(function(schemaConfig) {
+        return isFunction(schemaConfig.schema.then)
+      })
+
+      if (hasPromise) {
+        calledSchemas.forEach(function(config, i) {
+          if (config.mountPoint === '.' && isFunction(config.schema.then)) {
+            throw new Error('Schema with index ' + i + ' has mount point at the root and is a promise. This is not supported. You can\'t mount to root async. Due to vue limitation. Use a mount point.')
+          }
         })
-      })).then(function(schemaConfigs) {
-        // reactivity is already set up, we can just replace properties
-        Object.assign(self, createDataProperties(schemaConfigs))
-        self.$schema = schemaConfigs
-      })
 
-      Vue.util.defineReactive(this, '$schema', allSchemaPromise)
-      this.$options.data = Vue.config.optionMergeStrategies.data(function() {
-        return createDataProperties(calledSchemas, true)
-      }, this.$options.data)
-    } else {
-      // rewrite schemas normalized
-      Vue.util.defineReactive(this, '$schema', calledSchemas)
-      this.$options.data = Vue.config.optionMergeStrategies.data(function() {
-        return createDataProperties(calledSchemas)
-      }, this.$options.data)
+        var allSchemaPromise = Promise.all(calledSchemas.map(function(schemaConfig) {
+          if (isFunction(schemaConfig.schema.then)) {
+            return schemaConfig.schema.then(function(schema) {
+              var newConfig = omit(schemaConfig, 'schema')
+              newConfig.schema = schema
+              return newConfig
+            })
+          } else {
+            return schemaConfig
+          }
+        })).then(function(schemaConfigs) {
+          // reactivity is already set up, we can just replace properties
+          Object.assign(self, createDataProperties(schemaConfigs))
+          self.$schema = schemaConfigs
+        })
+
+        Vue.util.defineReactive(this, '$schema', allSchemaPromise)
+        this.$options.data = Vue.config.optionMergeStrategies.data(function() {
+          return createDataProperties(calledSchemas, true)
+        }, this.$options.data)
+      } else {
+        // rewrite schemas normalized
+        Vue.util.defineReactive(this, '$schema', calledSchemas)
+        this.$options.data = Vue.config.optionMergeStrategies.data(function() {
+          return createDataProperties(calledSchemas)
+        }, this.$options.data)
+      }
     }
   }
 }
 
 module.exports = {
-  mixin: mixin,
+  createFromSchema: createFromSchema,
+  mixin: createMixin(),
   install: function(Vue, options) {
-    Vue.mixin(mixin)
+    Vue.mixin(createMixin(options))
   }
 }
