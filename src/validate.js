@@ -7,6 +7,16 @@ function validateGroup(item, validator, key) {
       if (item === undefined || item === null) {
         return true
       }
+
+      if (innerKey === '$each') {
+        if(!Array.isArray(item[key])) return true //TODO is this correct when not array?
+        return item[key].every(function (value) {
+          return every(innerValidator, function(validator, index) {
+            return validateGroup(value, validator, index)
+          })
+        })
+      }
+
       return validateGroup(item[key], innerValidator, innerKey)
     })
   } else {
