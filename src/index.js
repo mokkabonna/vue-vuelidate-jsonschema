@@ -173,7 +173,7 @@ function createMixin(options) {
       var calledSchemas = normalized.map(function(schemaConfig) {
         if (isFunction(schemaConfig.schema)) {
           var config = cloneDeep(schemaConfig)
-          config.schema = schemaConfig.schema()
+          config.schema = schemaConfig.schema.call(self)
           return config
         }
 
