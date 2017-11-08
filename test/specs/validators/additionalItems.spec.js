@@ -76,7 +76,7 @@ describe('additionalItemsValidator', function() {
         children: [4]
       }])).to.eql(false)
 
-       expect(validator([1, {
+      expect(validator([1, {
         children: [5]
       }])).to.eql(true)
     })
