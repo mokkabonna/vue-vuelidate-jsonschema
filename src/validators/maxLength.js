@@ -1,4 +1,5 @@
 var vuelidate = require('vuelidate')
+var isString = require('lodash/isString')
 
 module.exports = function maxLengthValidator(propertySchema, max) {
   return vuelidate.withParams({
