@@ -33,7 +33,8 @@ You can use the local mixin like this:
 import VueVuelidateJsonschema from 'vue-vuelidate-jsonschema'
 
 export default {
-  mixins: [VueVuelidateJsonschema.mixin]
+  mixins: [VueVuelidateJsonschema.mixin],
+  validations: {} // make sure to provide an empty validations object if using as local mixin (see #17)
 }
 ```
 
