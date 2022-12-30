@@ -49,7 +49,7 @@
     "vuelidate": "^0.6.1"
   },
   "dependencies": {
-    "flat": "^4.0.0",
+    "flat": "^5.0.1",
     "lodash": "^4.17.4"
   }
 }
